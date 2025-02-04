@@ -1,0 +1,627 @@
+Total issues fetched: 40
+
+Key: PN2-53
+Issue Type: Story
+Summary: RovoAgent implementation for AI chatbot in JIRA - Conduct Technical Spike for RovoAgent Integration
+Description: As a technical lead, I want to conduct a technical spike for RovoAgent integration, so that potential challenges are identified early.
+Acceptance Criteria
+* Identify key technical challenges in integrating RovoAgent with JIRA.
+* Evaluate potential solutions and document findings.
+* Provide recommendations for seamless integration.
+Status: To Do
+Assignee: Jalin Solankee
+Due Date: 2024-11-30
+Start Date: 2024-11-23
+Completed Date: 2024-11-30
+Estimated Hours: 8.0
+Parent: PN2-38 - RovoAgent implementation for AI chatbot in JIRA
+----------------------------------------
+Key: PN2-52
+Issue Type: Story
+Summary: RovoAgent implementation for AI chatbot in JIRA - Implement Security Measures for RovoAgent
+Description: As a security officer, I want to implement security measures for RovoAgent, so that user data is protected.
+Acceptance Criteria
+* Data encryption is applied to user interactions.
+* Access controls are implemented for sensitive actions.
+* Security audits are conducted regularly.
+Status: To Do
+Assignee: Jalin Solankee
+Due Date: 2024-11-30
+Start Date: 2024-11-18
+Completed Date: 2024-11-29
+Estimated Hours: 8.0
+Parent: PN2-38 - RovoAgent implementation for AI chatbot in JIRA
+----------------------------------------
+Key: PN2-51
+Issue Type: Story
+Summary: RovoAgent implementation for AI chatbot in JIRA - Monitor RovoAgent's Usage and Feedback
+Description: As a product owner, I want to monitor RovoAgent's usage and collect feedback, so that I can improve its functionality.
+Acceptance Criteria
+* Usage metrics are collected and analyzed.
+* User feedback is documented and reviewed.
+* Improvements are prioritized based on feedback.
+Status: To Do
+Assignee: Jalin Solankee
+Due Date: 2024-12-07
+Start Date: 2024-11-24
+Completed Date: 2024-12-06
+Estimated Hours: 16.0
+Parent: PN2-38 - RovoAgent implementation for AI chatbot in JIRA
+----------------------------------------
+Key: PN2-50
+Issue Type: Story
+Summary: RovoAgent implementation for AI chatbot in JIRA - Develop RovoAgent's Natural Language Processing Capabilities
+Description: As a developer, I want to enhance RovoAgent's NLP capabilities, so that it understands complex queries.
+Acceptance Criteria
+* RovoAgent accurately processes complex queries.
+* NLP improvements are tested for accuracy.
+* Documentation is updated with NLP enhancements.
+Status: To Do
+Assignee: Jalin Solankee
+Due Date: 2024-11-29
+Start Date: 2024-10-29
+Completed Date: 2024-11-19
+Estimated Hours: 16.0
+Parent: PN2-38 - RovoAgent implementation for AI chatbot in JIRA
+----------------------------------------
+Key: PN2-49
+Issue Type: Story
+Summary: RovoAgent implementation for AI chatbot in JIRA - Support Multiple Languages in RovoAgent
+Description: As a global team member, I want RovoAgent to support multiple languages, so that I can interact in my preferred language.
+Acceptance Criteria
+* RovoAgent processes queries in multiple languages.
+* Language settings can be changed by users.
+* Translations are accurate and contextually appropriate.
+Status: To Do
+Assignee: Jalin Solankee
+Due Date: 2024-11-29
+Start Date: 2024-11-01
+Completed Date: 2024-11-24
+Estimated Hours: 8.0
+Parent: PN2-38 - RovoAgent implementation for AI chatbot in JIRA
+----------------------------------------
+Key: PN2-48
+Issue Type: Story
+Summary: RovoAgent implementation for AI chatbot in JIRA - Configure RovoAgent for Different User Roles
+Description: As a system administrator, I want to configure RovoAgent for different user roles, so that it provides role-specific functionalities.
+Acceptance Criteria
+* RovoAgent recognizes user roles and permissions.
+* Role-specific commands are available for different users.
+* Configuration changes are documented and maintainable.
+Status: To Do
+Assignee: Jalin Solankee
+Due Date: 2024-11-30
+Start Date: 2024-11-05
+Completed Date: 2024-11-26
+Estimated Hours: 8.0
+Parent: PN2-38 - RovoAgent implementation for AI chatbot in JIRA
+----------------------------------------
+Key: PN2-47
+Issue Type: Story
+Summary: RovoAgent implementation for AI chatbot in JIRA - Ensure Seamless User Experience
+Description: As a JIRA user, I want a seamless experience with RovoAgent, so that my workflow is not disrupted.
+Acceptance Criteria
+* RovoAgent interactions are intuitive and user-friendly.
+* Integration does not cause system lags or errors.
+* User interface is consistent with JIRA's design.
+Status: To Do
+Assignee: Jalin Solankee
+Due Date: 2024-11-24
+Start Date: 2024-11-04
+Completed Date: 2024-11-14
+Estimated Hours: 6.0
+Parent: PN2-38 - RovoAgent implementation for AI chatbot in JIRA
+----------------------------------------
+Key: PN2-46
+Issue Type: Story
+Summary: RovoAgent implementation for AI chatbot in JIRA - Optimize RovoAgent's Performance
+Description: As a user, I want RovoAgent's performance optimized, so that I experience efficient and accurate interactions.
+Acceptance Criteria
+* RovoAgent responds to queries promptly.
+* System resources are utilized efficiently.
+* User feedback is considered for performance improvements.
+Status: To Do
+Assignee: Daksh Prajapati
+Due Date: 2024-11-30
+Start Date: 2024-11-03
+Completed Date: 2024-11-23
+Estimated Hours: 16.0
+Parent: PN2-38 - RovoAgent implementation for AI chatbot in JIRA
+----------------------------------------
+Key: PN2-45
+Issue Type: Story
+Summary: RovoAgent implementation for AI chatbot in JIRA - Train RovoAgent with Relevant Data
+Description: As a system administrator, I want to train RovoAgent with relevant data, so that it can provide accurate responses.
+Acceptance Criteria
+* Training data includes common user queries and responses.
+* RovoAgent's accuracy improves with training.
+* Training is conducted without disrupting system operations.
+Status: To Do
+Assignee: Daksh Prajapati
+Due Date: 2024-11-30
+Start Date: 2024-11-02
+Completed Date: 2024-11-24
+Estimated Hours: 8.0
+Parent: PN2-38 - RovoAgent implementation for AI chatbot in JIRA
+----------------------------------------
+Key: PN2-44
+Issue Type: Story
+Summary: RovoAgent implementation for AI chatbot in JIRA - Provide Project Insights via RovoAgent
+Description: As a stakeholder, I want RovoAgent to provide project insights, so that I can make informed decisions.
+Acceptance Criteria
+* RovoAgent delivers insights based on project data.
+* Insights are relevant and actionable.
+* Users can request specific insights using natural language.
+Status: To Do
+Assignee: Daksh Prajapati
+Due Date: 2024-11-30
+Start Date: 2024-11-02
+Completed Date: 2024-11-24
+Estimated Hours: None
+Parent: PN2-38 - RovoAgent implementation for AI chatbot in JIRA
+----------------------------------------
+Key: PN2-43
+Issue Type: Story
+Summary: RovoAgent implementation for AI chatbot in JIRA - Generate Reports with RovoAgent
+Description: As a project manager, I want to generate reports using RovoAgent, so that I can easily access project metrics.
+Acceptance Criteria
+* Users can request reports using natural language.
+* RovoAgent generates reports with accurate data.
+* Reports are formatted for easy comprehension.
+Status: To Do
+Assignee: Daksh Prajapati
+Due Date: 2024-11-30
+Start Date: 2024-11-01
+Completed Date: 2024-11-24
+Estimated Hours: None
+Parent: PN2-38 - RovoAgent implementation for AI chatbot in JIRA
+----------------------------------------
+Key: PN2-42
+Issue Type: Story
+Summary: RovoAgent implementation for AI chatbot in JIRA - Query Issues using RovoAgent
+Description: As a team member, I want to query issues using RovoAgent, so that I can quickly retrieve issue information.
+Acceptance Criteria
+* Users can retrieve issue details using natural language queries.
+* RovoAgent provides accurate and relevant information.
+* Query results are delivered promptly.
+Status: To Do
+Assignee: Daksh Prajapati
+Due Date: 2024-11-30
+Start Date: 2024-11-01
+Completed Date: 2024-11-26
+Estimated Hours: None
+Parent: PN2-38 - RovoAgent implementation for AI chatbot in JIRA
+----------------------------------------
+Key: PN2-41
+Issue Type: Story
+Summary: RovoAgent implementation for AI chatbot in JIRA - Update Issues through RovoAgent
+Description: As a developer, I want to update issues using RovoAgent, so that I can efficiently manage issue statuses and details.
+Acceptance Criteria
+* Users can update issue status and details using natural language.
+* RovoAgent confirms updates with the user.
+* Updated issues reflect changes in JIRA immediately.
+Status: To Do
+Assignee: Daksh Prajapati
+Due Date: 2024-11-30
+Start Date: 2024-11-09
+Completed Date: 2024-11-25
+Estimated Hours: 8.0
+Parent: PN2-38 - RovoAgent implementation for AI chatbot in JIRA
+----------------------------------------
+Key: PN2-40
+Issue Type: Story
+Summary: RovoAgent implementation for AI chatbot in JIRA - Enable Issue Creation via RovoAgent
+Description: As a project manager, I want to create issues using RovoAgent, so that I can streamline the issue creation process.
+Acceptance Criteria
+* Users can create issues using natural language commands.
+* Created issues appear in the JIRA backlog with correct details.
+* RovoAgent confirms issue creation with the user.
+Status: To Do
+Assignee: Daksh Prajapati
+Due Date: 2024-11-30
+Start Date: 2024-11-09
+Completed Date: 2024-11-28
+Estimated Hours: 8.0
+Parent: PN2-38 - RovoAgent implementation for AI chatbot in JIRA
+----------------------------------------
+Key: PN2-39
+Issue Type: Story
+Summary: RovoAgent implementation for AI chatbot in JIRA - Integrate RovoAgent with JIRA
+Description: As a JIRA user, I want RovoAgent integrated with JIRA, so that I can interact with the system using natural language.
+Acceptance Criteria
+* RovoAgent is accessible within the JIRA environment.
+* Integration does not disrupt existing JIRA functionalities.
+* Users can invoke RovoAgent through a defined interface.
+Status: To Do
+Assignee: Daksh Prajapati
+Due Date: 2024-11-30
+Start Date: 2024-11-09
+Completed Date: 2024-11-28
+Estimated Hours: 8.0
+Parent: PN2-38 - RovoAgent implementation for AI chatbot in JIRA
+----------------------------------------
+Key: PN2-37
+Issue Type: Story
+Summary: Data collection - Maintain Technical Documentation
+Description: As a Technical Writer, I want to maintain documentation for all data collection processes, so that team members have a clear understanding of the system.
+Acceptance Criteria
+* Documentation is comprehensive and up-to-date.
+* Technical details of data pipelines, preprocessing, and storage are included.
+* Access to documentation is available to all relevant team members.
+Status: To Do
+Assignee: Varad Parte
+Due Date: 2024-11-15
+Start Date: 2024-10-19
+Completed Date: 2024-11-13
+Estimated Hours: 8.0
+Parent: PN2-27 - Data collection
+----------------------------------------
+Key: PN2-36
+Issue Type: Story
+Summary: Data collection - Conduct Regular Data Quality Audits
+Description: As a Quality Assurance Analyst, I want to conduct regular audits to ensure data quality and compliance, so that the chatbot's performance remains optimal.
+Acceptance Criteria
+* Audits are scheduled and conducted regularly.
+* Data quality metrics are defined and measured.
+* Non-compliant data is identified and corrected.
+Status: To Do
+Assignee: Varad Parte
+Due Date: 2024-11-15
+Start Date: 2024-10-20
+Completed Date: 2024-11-13
+Estimated Hours: 8.0
+Parent: PN2-27 - Data collection
+----------------------------------------
+Key: PN2-35
+Issue Type: Story
+Summary: Data collection - Structure Context Management Datasets
+Description: As a Data Scientist, I want to structure context management datasets to support conversational flow, so that the chatbot can maintain context during interactions.
+Acceptance Criteria
+* Datasets are organized to support multi-turn conversations.
+* Contextual data is labeled and structured appropriately.
+* Test cases are created to validate context management.
+Status: To Do
+Assignee: Varad Parte
+Due Date: 2024-11-15
+Start Date: 2024-10-20
+Completed Date: 2024-11-13
+Estimated Hours: 16.0
+Parent: PN2-27 - Data collection
+----------------------------------------
+Key: PN2-34
+Issue Type: Story
+Summary: Data collection - Organize Intent Recognition Datasets
+Description: As a Data Scientist, I want to organize and label intent recognition datasets accurately, so that the chatbot can identify user intents effectively.
+Acceptance Criteria
+* Datasets are labeled with accurate intent categories.
+* Data is structured to support machine learning models.
+* Regular updates are made to include new intents.
+Status: To Do
+Assignee: Varad Parte
+Due Date: 2024-11-15
+Start Date: 2024-10-19
+Completed Date: 2024-11-13
+Estimated Hours: 8.0
+Parent: PN2-27 - Data collection
+----------------------------------------
+Key: PN2-33
+Issue Type: Story
+Summary: Data collection - Provide Natural Language Datasets
+Description: As a Data Scientist, I want to ensure natural language datasets are available for training, covering diverse dialects and contexts, so that the chatbot understands user inputs accurately.
+Acceptance Criteria
+* Datasets include diverse languages and dialects.
+* Data is labeled correctly for training purposes.
+* Coverage of various contexts is ensured.
+Status: To Do
+Assignee: Varad Parte
+Due Date: 2024-11-11
+Start Date: 2024-10-15
+Completed Date: 2024-11-08
+Estimated Hours: 8.0
+Parent: PN2-27 - Data collection
+----------------------------------------
+Key: PN2-32
+Issue Type: Story
+Summary: Data collection - Verify Ethically Sourced Data
+Description: As a Data Steward, I want to verify that data is ethically sourced, so that we adhere to ethical standards and maintain data integrity.
+Acceptance Criteria
+* Source of data is documented and verified.
+* Ethical sourcing guidelines are established and followed.
+* Regular reviews are conducted to ensure ongoing compliance.
+Status: To Do
+Assignee: Jalin Solankee
+Due Date: 2024-11-13
+Start Date: 2024-10-16
+Completed Date: 2024-11-11
+Estimated Hours: 16.0
+Parent: PN2-27 - Data collection
+----------------------------------------
+Key: PN2-31
+Issue Type: Story
+Summary: Data collection - Address Data Privacy Concerns
+Description: As a Compliance Officer, I want to address data privacy concerns, ensuring compliance with GDPR and other relevant regulations, so that user data is protected.
+Acceptance Criteria
+* Data privacy policies are documented and implemented.
+* Data anonymization techniques are applied where necessary.
+* Regular audits are conducted to ensure compliance with GDPR.
+Status: To Do
+Assignee: Jalin Solankee
+Due Date: 2024-11-15
+Start Date: 2024-10-19
+Completed Date: 2024-11-13
+Estimated Hours: 8.0
+Parent: PN2-27 - Data collection
+----------------------------------------
+Key: PN2-30
+Issue Type: Story
+Summary: Data collection - Organize Datasets in MongoDB
+Description: As a Database Administrator, I want to organize datasets in a MongoDB database, so that they are easily accessible and manageable.
+Acceptance Criteria
+* Datasets are stored in MongoDB collections.
+* Indexes are created to optimize query performance.
+* Access controls are implemented to secure the data.
+Status: To Do
+Assignee: Jalin Solankee
+Due Date: 2024-11-15
+Start Date: 2024-10-18
+Completed Date: 2024-11-12
+Estimated Hours: 8.0
+Parent: PN2-27 - Data collection
+----------------------------------------
+Key: PN2-29
+Issue Type: Story
+Summary: Data collection - Develop Data Preprocessing Scripts
+Description: As a Data Scientist, I want to develop data preprocessing scripts using Pandas and NumPy, so that the data is clean and ready for training.
+Acceptance Criteria
+* Scripts are written in Python using Pandas and NumPy.
+* Data is cleaned, normalized, and transformed as required.
+* Preprocessing scripts are tested for accuracy and efficiency.
+Status: To Do
+Assignee: Daksh Prajapati
+Due Date: 2024-11-15
+Start Date: 2024-10-18
+Completed Date: 2024-11-14
+Estimated Hours: 16.0
+Parent: PN2-27 - Data collection
+----------------------------------------
+Key: PN2-28
+Issue Type: Story
+Summary: Data collection - Implement Data Collection Pipelines
+Description: As a Data Engineer, I want to implement data collection pipelines using Python and Apache Kafka, so that data can be ingested efficiently and in real-time.
+Acceptance Criteria
+* Pipelines are developed using Python and Apache Kafka.
+* Data is ingested from multiple sources in real-time.
+* Logs are maintained for data ingestion activities.
+Status: To Do
+Assignee: Daksh Prajapati
+Due Date: 2024-11-15
+Start Date: 2024-10-20
+Completed Date: 2024-11-14
+Estimated Hours: 8.0
+Parent: PN2-27 - Data collection
+----------------------------------------
+Key: PN2-26
+Issue Type: Story
+Summary: Personalized Learning Management System (LMS) - Technical Spike: Machine Learning Integration
+Description: As a developer, I need to explore machine learning algorithms for adaptive learning paths, so that the LMS can provide personalized recommendations.
+Acceptance Criteria
+* Research and select appropriate machine learning models for course recommendations.
+* Prototype integration with existing user data and evaluate effectiveness.
+Status: To Do
+Assignee: Varad Parte
+Due Date: 2024-11-20
+Start Date: 2024-11-11
+Completed Date: 2024-11-20
+Estimated Hours: 32.0
+Parent: PN2-11 - Personalized Learning Management System (LMS)
+----------------------------------------
+Key: PN2-25
+Issue Type: Story
+Summary: Personalized Learning Management System (LMS) - Leaderboard Visibility
+Description: As a learner, I want to view leaderboards, so that I can see my standing compared to peers.
+Acceptance Criteria
+* Leaderboards display top performers based on points.
+* Users can filter leaderboards by course or time period.
+Status: To Do
+Assignee: Varad Parte
+Due Date: 2024-11-20
+Start Date: 2024-11-04
+Completed Date: 2024-11-08
+Estimated Hours: 16.0
+Parent: PN2-11 - Personalized Learning Management System (LMS)
+----------------------------------------
+Key: PN2-24
+Issue Type: Story
+Summary: Personalized Learning Management System (LMS) - Content Upload for Instructors
+Description: As an instructor, I want to upload multimedia content easily, so that I can provide diverse learning materials to students.
+Acceptance Criteria
+* Instructors can upload videos, quizzes, and PDFs through a user-friendly interface.
+* Uploads are processed and available to learners promptly.
+Status: To Do
+Assignee: Varad Parte
+Due Date: 2024-11-20
+Start Date: 2024-11-06
+Completed Date: 2024-11-12
+Estimated Hours: 16.0
+Parent: PN2-11 - Personalized Learning Management System (LMS)
+----------------------------------------
+Key: PN2-23
+Issue Type: Story
+Summary: Personalized Learning Management System (LMS) - Course Completion Badges
+Description: As a learner, I want to earn badges upon completing courses, so that I feel recognized for my achievements.
+Acceptance Criteria
+* Badges are awarded for course completions and displayed on user profiles.
+* A badge gallery shows all possible and earned badges.
+Status: To Do
+Assignee: Varad Parte
+Due Date: 2024-11-27
+Start Date: 2024-11-19
+Completed Date: 2024-11-27
+Estimated Hours: 16.0
+Parent: PN2-11 - Personalized Learning Management System (LMS)
+----------------------------------------
+Key: PN2-22
+Issue Type: Story
+Summary: Personalized Learning Management System (LMS) - Real-Time Notifications
+Description: As a learner, I want to receive real-time notifications, so that I am updated about forum activities and course updates.
+Acceptance Criteria
+* Notifications are sent for new forum posts and course updates.
+* Users can customize notification preferences.
+Status: To Do
+Assignee: Varad Parte
+Due Date: 2024-11-27
+Start Date: 2024-11-22
+Completed Date: 2024-11-27
+Estimated Hours: 8.0
+Parent: PN2-11 - Personalized Learning Management System (LMS)
+----------------------------------------
+Key: PN2-21
+Issue Type: Story
+Summary: Personalized Learning Management System (LMS) - Interactive Quiz Functionality
+Description: As a learner, I want to take interactive quizzes, so that I can assess my understanding of the material.
+Acceptance Criteria
+* Quizzes support multiple question types and provide instant feedback.
+* Scores and attempts are recorded and displayed in the dashboard.
+Status: To Do
+Assignee: Arya
+Due Date: 2024-11-27
+Start Date: 2024-11-20
+Completed Date: 2024-11-26
+Estimated Hours: 16.0
+Parent: PN2-11 - Personalized Learning Management System (LMS)
+----------------------------------------
+Key: PN2-20
+Issue Type: Story
+Summary: Personalized Learning Management System (LMS) - User Data Analysis
+Description: As a data analyst, I want to analyze user data to improve learning path recommendations, so that the LMS becomes more effective over time.
+Acceptance Criteria
+* Data analysis tools are integrated to track and interpret user interactions.
+* Insights from data are used to refine course recommendations.
+Status: To Do
+Assignee: Arya
+Due Date: 2024-11-27
+Start Date: 2024-11-11
+Completed Date: 2024-11-22
+Estimated Hours: 8.0
+Parent: PN2-11 - Personalized Learning Management System (LMS)
+----------------------------------------
+Key: PN2-19
+Issue Type: Story
+Summary: Personalized Learning Management System (LMS) - Backend Scalability
+Description: As a developer, I need to implement scalable backend systems, so that the LMS can handle large amounts of data and users.
+Acceptance Criteria
+* The backend is built using Django/Flask to support data handling.
+* Load testing confirms the system's ability to scale with user growth.
+Status: To Do
+Assignee: Arya
+Due Date: 2024-11-20
+Start Date: 2024-11-04
+Completed Date: 2024-11-11
+Estimated Hours: 24.0
+Parent: PN2-11 - Personalized Learning Management System (LMS)
+----------------------------------------
+Key: PN2-18
+Issue Type: Story
+Summary: Personalized Learning Management System (LMS) - Mobile-First Design
+Description: As a mobile user, I want an optimized interface, so that I can access the LMS easily on my device.
+Acceptance Criteria
+* The user interface is responsive and functions well on mobile devices.
+* All features are accessible and usable on smaller screens.
+Status: To Do
+Assignee: Arya
+Due Date: 2024-11-27
+Start Date: 2024-11-20
+Completed Date: 2024-11-28
+Estimated Hours: 16.0
+Parent: PN2-11 - Personalized Learning Management System (LMS)
+----------------------------------------
+Key: PN2-17
+Issue Type: Story
+Summary: Personalized Learning Management System (LMS) - API for Tool Integration
+Description: As an admin, I want an API to integrate with third-party tools like Google Classroom, so that workflows are seamless.
+Acceptance Criteria
+* The API supports integration with Google Classroom and Microsoft Teams.
+* Data synchronization between the LMS and external tools is reliable.
+Status: To Do
+Assignee: Arya
+Due Date: 2024-11-20
+Start Date: 2024-11-11
+Completed Date: 2024-11-13
+Estimated Hours: 16.0
+Parent: PN2-11 - Personalized Learning Management System (LMS)
+----------------------------------------
+Key: PN2-16
+Issue Type: Story
+Summary: Personalized Learning Management System (LMS) - Community Discussion Forums
+Description: As a learner, I want to participate in discussion forums to collaborate and ask questions, so that I can enhance my learning experience.
+Acceptance Criteria
+* Forums support posts, replies, and real-time notifications.
+* Users can tag and categorize discussions for easy access.
+Status: To Do
+Assignee: Arya
+Due Date: 2024-11-20
+Start Date: 2024-11-04
+Completed Date: 2024-11-22
+Estimated Hours: 24.0
+Parent: PN2-11 - Personalized Learning Management System (LMS)
+----------------------------------------
+Key: PN2-15
+Issue Type: Story
+Summary: Personalized Learning Management System (LMS) - Gamification Elements
+Description: As a learner, I want to earn badges, points, and see leaderboards, so that I am motivated to engage with the learning content.
+Acceptance Criteria
+* Users earn badges for completing specific milestones.
+* Points are awarded for various activities and displayed on a leaderboard.
+Status: To Do
+Assignee: Arya
+Due Date: 2024-11-27
+Start Date: 2024-11-18
+Completed Date: 2024-11-22
+Estimated Hours: 16.0
+Parent: PN2-11 - Personalized Learning Management System (LMS)
+----------------------------------------
+Key: PN2-14
+Issue Type: Story
+Summary: Personalized Learning Management System (LMS) - Progress Dashboard
+Description: As a learner, I want a dashboard that shows my progress, completion rates, and performance metrics, so that I can track my learning journey.
+Acceptance Criteria
+* The dashboard displays up-to-date progress and completion rates.
+* Performance metrics are clearly visualized and easy to understand.
+Status: To Do
+Assignee: Arya
+Due Date: 2024-11-27
+Start Date: 2024-11-06
+Completed Date: 2024-11-14
+Estimated Hours: 32.0
+Parent: PN2-11 - Personalized Learning Management System (LMS)
+----------------------------------------
+Key: PN2-13
+Issue Type: Story
+Summary: Personalized Learning Management System (LMS) - Multimedia Content Support
+Description: As a learner, I want to access multimedia content such as videos, quizzes, and PDFs, so that I can engage with diverse learning materials.
+Acceptance Criteria
+* The frontend supports video playback, interactive quizzes, and PDF viewing.
+* Content is dynamically loaded and visually appealing.
+Status: To Do
+Assignee: Arya
+Due Date: 2024-11-27
+Start Date: 2024-11-06
+Completed Date: 2024-11-08
+Estimated Hours: 8.0
+Parent: PN2-11 - Personalized Learning Management System (LMS)
+----------------------------------------
+Key: PN2-12
+Issue Type: Story
+Summary: Personalized Learning Management System (LMS) - Adaptive Course Recommendation
+Description: As a learner, I want the system to recommend courses based on my progress and preferences, so that I can follow a personalized learning path.
+Acceptance Criteria
+* The system analyzes user data to recommend the next course.
+* Recommendations are updated based on user progress and feedback.
+Status: To Do
+Assignee: Arya
+Due Date: 2024-11-27
+Start Date: 2024-11-20
+Completed Date: 2024-11-25
+Estimated Hours: 16.0
+Parent: PN2-11 - Personalized Learning Management System (LMS)
+----------------------------------------
