@@ -310,4 +310,6 @@ Our project budget includes $15 spent on purchasing OpenAI 4o tokens, which are 
 | Documentation, Testing, Reporting and Assignments | 6       | 6           | 6                | 6              | **24**           |
 | **Total Hours**                               | **45**     | **45**      | **45**           | **45**         | **180**     |
 
+**<mark>Currently in Phase 3 of the project as described in the above Task List & Timeline.</mark>**
+
 In addition to the development and research efforts, the team held weekly meetings lasting 2–3 hours. These sessions were dedicated to discussing progress updates, addressing roadblocks, brainstorming new ideas, and sharing newly researched materials that could inform future development. 

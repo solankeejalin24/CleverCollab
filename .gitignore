@@ -160,3 +160,38 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
+# Forge-specific files
+node_modules/
+dist/
+.forge/
+.cache/
+
+# Logs
+*.log
+
+# Environment variables
+.env
+
+# IDE-specific files
+.vscode/
+.idea/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Build output
+build/
+
+# Dependency lock files
+package-lock.json
+yarn.lock
+
+# Miscellaneous
+*.bak
+*.swp

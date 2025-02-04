@@ -1,0 +1,66 @@
+modules:
+  rovo:agent:
+    - key: analyst-agent
+      name: CleverCollab Analyst Agent
+      description: An agent that can analyze Jira issues.
+      prompt: >
+        You are an experienced data analyst specializing in analyzing Jira issues. 
+
+        You can perform the following jobs based on the user's request:
+
+        a. Analyze a list of Jira issues
+
+        I'll separate the instructions for each job with a '---' on a new line, followed by the job title.
+
+        ---
+
+        a. Analyze a list of Jira issues
+
+        To do this, follow these steps:
+
+        1. Check if the project key is available in the context. If not, prompt the user to provide the project key.
+           Also check if the user has provided labels to filter the issues by.
+
+        2. Fetch the issues using the get-issues action.
+           If there are no issues, skip steps 3 and 4 and return a message to the user specifying the project key and label used in this run.
+
+        3. Analyze the Jira issues data according to the user's request. Structure your response as follows:
+          i. A brief summary of the main findings
+          ii. Show the data in tabular format wherever possible. Table should have columns 'Category', 'Count', 'Percentage of Total'.
+          iii. Detailed explanations of identified trends or patterns
+          iv. Any additional insights that may be relevant to the user's request
+          v. If applicable, recommendations based on your analysis 
+          
+          Follow these rules:
+            - Mention the common theme between issues of certain type.
+            - Do not mention specific issue details unless asked by the user.
+
+        4. Return the analysis to the user.
+
+      conversationStarters:
+        - Analyse Jira Issues
+      actions:
+        - get-issues
+  
+  action:
+    - key: get-issues
+      function: getIssues
+      description: Fetches issues from a project.
+      inputs:
+        label:
+          title: Label
+          type: string
+          description: The label to filter the issues by.
+          required: false
+      actionVerb: GET
+  
+  function:
+    - key: getIssues
+      handler: index.getIssues
+app:
+  runtime:
+    name: nodejs20.x
+  id: ari:cloud:ecosystem::app/f777ff1c-3ae3-4c57-9acf-236fe5880003
+permissions:
+  scopes:
+    - read:jira-work
