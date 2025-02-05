@@ -33,7 +33,8 @@ def parse_issues_from_txt(file_path):
             "Start Date": "",
             "Completed Date": "",
             "Estimated Hours": "",
-            "Parent": ""
+            "Parent": "",
+            "Skills": ""
         }
  
         current_field = None
@@ -121,19 +122,33 @@ def build_vector_store(client, issues):
 # -------------------------
 # 3. Retrieval Function
 # -------------------------
-def retrieve_relevant_issues(client, query, index, texts, metadata, top_k=5):
+def retrieve_relevant_issues(client, query, index, texts, metadata):
+    # response = client.embeddings.create(
+    #     model="text-embedding-ada-002",
+    #     input=[query]
+    # )
+    # query_embedding = np.array([response.data[0].embedding], dtype='float32')
+ 
+    # distances, indices = index.search(query_embedding, top_k)
+ 
+    # results = []
+    # for dist, idx in zip(distances[0], indices[0]):
+    #     results.append((texts[idx], metadata[idx], dist))
+ 
+    # return results
     response = client.embeddings.create(
         model="text-embedding-ada-002",
         input=[query]
     )
     query_embedding = np.array([response.data[0].embedding], dtype='float32')
- 
-    distances, indices = index.search(query_embedding, top_k)
- 
+   
+    # Get ALL tasks from the index
+    distances, indices = index.search(query_embedding, index.ntotal)
+   
     results = []
     for dist, idx in zip(distances[0], indices[0]):
         results.append((texts[idx], metadata[idx], dist))
- 
+   
     return results
  
 # -------------------------
@@ -143,11 +158,13 @@ def expert_pm_answer(client, query, index, texts, metadata):
     retrieved = retrieve_relevant_issues(client, query, index, texts, metadata)
  
     context = "\n\n---\n\n".join([res[0] for res in retrieved])
-    print(context)
+    # print(context)
  
     system_message = (
         "You are an Expert Project Manager. You have knowledge of the following project issues. "
-        "Dates in the provided data are formatted as yyyy-mm-dd. Use this information to answer the user query accurately and helpfully.\n\n"
+        "Dates in the provided data are formatted as yyyy-mm-dd. Use this information to answer the user query accurately and helpfully."
+        "Make sure you take into account the employee name provided to you and if the information provided does not have the employee name, then tell the manager that."
+        "The answer should be based on the skills of the Employee, but it should focus on all the details provided to you in the context.\n\n"
         f"CONTEXT:\n{context}\n"
         "------------------------\n"
         "User Query: "
