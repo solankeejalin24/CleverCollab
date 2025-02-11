@@ -6,6 +6,7 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "@forge/api": "^4.1.1"
+    "@forge/api": "^4.1.1",
+    "action-rovo": "file:"
   }
 }

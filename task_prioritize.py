@@ -90,7 +90,7 @@ def build_vector_store(client, issues):
             f"Issue Type: {issue['Issue Type']}\n"
             f"Summary: {issue['Summary']}\n"
             f"Description: {issue['Description']}\n"
-            f"Acceptance Criteria: {issue['Acceptance Criteria']}\n"
+            # f"Acceptance Criteria: {issue['Acceptance Criteria']}\n"
             f"Status: {issue['Status']}\n"
             f"Assignee: {issue['Assignee']}\n"
             f"Due Date: {issue['Due Date']}\n"
@@ -163,7 +163,7 @@ def expert_pm_answer(client, query, index, texts, metadata):
     system_message = (
         "You are an Expert Project Manager. You have knowledge of the following project issues. "
         "Dates in the provided data are formatted as yyyy-mm-dd. Use this information to answer the user query accurately and helpfully."
-        "Make sure you take into account the employee name provided to you and if the information provided does not have the employee name, then tell the manager that."
+        "Make sure you take into account the employee name OR assignee provided to you and if the information provided does not have the employee name, then tell the manager that."
         "The answer should be based on the skills of the Employee, but it should focus on all the details provided to you in the context.\n\n"
         f"CONTEXT:\n{context}\n"
         "------------------------\n"
