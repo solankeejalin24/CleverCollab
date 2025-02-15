@@ -1,0 +1,22 @@
+[
+    {
+        "Name": "Varad Parte",
+        "Title": "Senior Developer",
+        "Skills": ["Python", "AWS", "React"]
+    },
+    {
+        "Name": "Jalin Solankee",
+        "Title": "Data Scientist",
+        "Skills": ["Python", "ML", "AI"]
+    },
+    {
+        "Name": "Arya",
+        "Title": "Frontend Developer",
+        "Skills": ["Python", "Javascript", "Svelte", "HTML", "CSS"]
+    },
+    {
+        "Name": "Daksh Prajapati",
+        "Title": "Full Stack Engineer",
+        "Skills": ["Python", "C++", "C", "Javascript", "MATLAB"]
+    }
+]
