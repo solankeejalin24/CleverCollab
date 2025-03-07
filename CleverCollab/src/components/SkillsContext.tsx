@@ -90,9 +90,7 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
         await saveSkillsToFile(skills)
       } catch (error) {
         console.error("Failed to save skills to file:", error)
-        toast.error("Error", {
-          description: "Failed to save skills to file",
-        })
+        toast.error("Failed to save skills to file")
       }
     }
 

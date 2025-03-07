@@ -23,7 +23,7 @@ export function SignupModal({ isOpen, onClose }: SignupModalProps) {
     e.preventDefault()
 
     // This is just a placeholder for now
-    toast("Sign Up Attempted",{
+    toast.message('Sign Up Attempted', {
       description: `Name: ${name}, Email: ${email} (This is just a placeholder)`,
     })
 

@@ -30,7 +30,7 @@ export type Column = {
 }
 
 export function KanbanBoard() {
-//   const { toast } = useToast()
+  // const { toast } = useToast()
   const [columns, setColumns] = useState<Column[]>([
     {
       id: "todo",
@@ -160,7 +160,7 @@ export function KanbanBoard() {
         })
       })
 
-      toast("Task moved successfully")
+      toast.success("Task moved successfully")
     }
 
     setActiveId(null)
@@ -189,7 +189,7 @@ export function KanbanBoard() {
       setNewTaskDialogOpen(false)
       setNewTaskContent("")
 
-      toast( "New task created")
+      toast.success("New task created")
     }
   }
 

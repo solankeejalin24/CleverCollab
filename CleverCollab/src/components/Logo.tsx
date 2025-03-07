@@ -1,5 +1,6 @@
 import Image from "next/image"
 import Link from "next/link"
+import logo from "./../../public/logo.png"
 
 interface LogoProps {
   className?: string
@@ -12,7 +13,7 @@ export function Logo({ className = "", size = "small" }: LogoProps) {
   return (
     <Link href="/" className={className}>
       <Image
-        src="/lib/logo-transparent-png.png"
+        src={logo}
         alt="Clever Collab"
         {...dimensions}
         className="dark:brightness-200"

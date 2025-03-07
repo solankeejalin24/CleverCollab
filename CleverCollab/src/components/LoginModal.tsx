@@ -22,7 +22,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
     e.preventDefault()
 
     // This is just a placeholder for now
-    toast("Login Attempted",{
+    toast.message('Login Attempted', {
       description: `Email: ${email} (This is just a placeholder)`,
     })
 

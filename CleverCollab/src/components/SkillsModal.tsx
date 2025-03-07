@@ -24,7 +24,7 @@ export function SkillsModal() {
         category: newSkillCategory,
       })
 
-      toast(`Added skill: ${newSkillName}`)
+      toast.success(`Added skill: ${newSkillName}`)
 
       setNewSkillName("")
     }
