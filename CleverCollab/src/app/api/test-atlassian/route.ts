@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAtlassianToken, fetchJiraData } from "@/lib/atlassian";
+import { getAtlassianToken, getAtlassianCloudId, fetchJiraData } from "@/lib/atlassian";
 
 export async function GET() {
   try {
@@ -13,21 +13,44 @@ export async function GET() {
       );
     }
     
-    // Try to fetch a simple endpoint to test the integration
+    console.log("Successfully obtained Atlassian token");
+    
+    // Try to get the Cloud ID
+    let cloudId;
     try {
-      const myself = await fetchJiraData("myself");
-      return NextResponse.json({ success: true, user: myself });
-    } catch (error) {
-      console.error("Error fetching Jira data:", error);
+      cloudId = await getAtlassianCloudId();
+      console.log(`Successfully retrieved Cloud ID: ${cloudId}`);
+    } catch (error: any) {
       return NextResponse.json(
-        { error: "Failed to fetch Jira data", details: error },
+        { 
+          error: "Failed to get Atlassian Cloud ID", 
+          details: error.message,
+          message: "Please visit /api/atlassian/cloud-id to get your Cloud ID"
+        },
         { status: 500 }
       );
     }
-  } catch (error) {
+    
+    // Try to fetch a simple endpoint to test the integration
+    try {
+      const myself = await fetchJiraData("myself");
+      return NextResponse.json({ 
+        success: true, 
+        user: myself,
+        cloudId,
+        message: "Your Atlassian integration is working correctly!"
+      });
+    } catch (error: any) {
+      console.error("Error fetching Jira data:", error);
+      return NextResponse.json(
+        { error: "Failed to fetch Jira data", details: error.message },
+        { status: 500 }
+      );
+    }
+  } catch (error: any) {
     console.error("Error in test-atlassian route:", error);
     return NextResponse.json(
-      { error: "Internal server error", details: error },
+      { error: "Internal server error", details: error.message },
       { status: 500 }
     );
   }

@@ -14,13 +14,14 @@ export async function GET(request: Request) {
   }
   
   try {
+    console.log(`Fetching issues for project: ${projectKey}`);
     const jql = `project = ${projectKey} ORDER BY created DESC`;
     const issues = await fetchJiraData(`search?jql=${encodeURIComponent(jql)}`);
     return NextResponse.json(issues);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error fetching issues:", error);
     return NextResponse.json(
-      { error: "Failed to fetch issues" },
+      { error: "Failed to fetch issues", details: error.message },
       { status: 500 }
     );
   }

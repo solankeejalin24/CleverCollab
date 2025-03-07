@@ -85,7 +85,7 @@ export function Header() {
               </Button>
             </SignedOut>
             <SignedIn>
-              <UserButton afterSignOutUrl="/" />
+              <UserButton/>
             </SignedIn>
             <ThemeToggle />
           </div>
