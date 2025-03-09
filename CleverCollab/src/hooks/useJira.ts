@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { FormattedJiraIssue } from '@/lib/jira';
 
 interface UseJiraReturn {
@@ -27,12 +27,20 @@ export function useJira(): UseJiraReturn {
         }
       });
       
-      setUserAccountIds(accountMap);
-      console.log('User account mapping:', accountMap);
+      // Only update if the map is different to avoid unnecessary re-renders
+      const currentKeys = Object.keys(userAccountIds);
+      const newKeys = Object.keys(accountMap);
+      
+      if (currentKeys.length !== newKeys.length || 
+          newKeys.some(key => !currentKeys.includes(key) || userAccountIds[key] !== accountMap[key])) {
+        setUserAccountIds(accountMap);
+        console.log('User account mapping updated:', accountMap);
+      }
     }
-  }, [issues]);
+  }, [issues, userAccountIds]);
 
-  const fetchIssues = async (jql = 'issuetype in (Story, Task, Bug)') => {
+  // Use useCallback to ensure the function reference is stable
+  const fetchIssues = useCallback(async (jql = 'issuetype in (Story, Task, Bug)') => {
     try {
       setLoading(true);
       setError(null);
@@ -45,20 +53,22 @@ export function useJira(): UseJiraReturn {
       }
 
       setIssues(data.data);
-      console.log('Fetched issues:', data.data);
+      console.log('Fetched issues:', data.data.length);
     } catch (err) {
       console.error('Error in useJira hook:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
-  };
+  }, []); // No dependencies to ensure stability
 
-  const getIssuesByStatus = (statusCategory: 'todo' | 'in-progress' | 'done'): FormattedJiraIssue[] => {
+  // Use useCallback for getIssuesByStatus to ensure the function reference is stable
+  const getIssuesByStatus = useCallback((statusCategory: 'todo' | 'in-progress' | 'done'): FormattedJiraIssue[] => {
     return issues.filter(issue => issue.statusCategory === statusCategory);
-  };
+  }, [issues]); // Only depend on issues
 
-  const getMyIssues = (userEmail?: string, userName?: string): FormattedJiraIssue[] => {
+  // Use useCallback for getMyIssues to ensure the function reference is stable
+  const getMyIssues = useCallback((userEmail?: string, userName?: string): FormattedJiraIssue[] => {
     if (!userEmail && !userName) return [];
     
     console.log('Looking for issues for user:', { userEmail, userName });
@@ -78,7 +88,8 @@ export function useJira(): UseJiraReturn {
     // Try to match by name
     if (userName) {
       const nameMatches = issues.filter(issue => {
-        // Case-insensitive partial name matching
+        if (!issue.assignee || issue.assignee === 'Unassigned') return false;
+        
         const assigneeName = issue.assignee.toLowerCase();
         const searchName = userName.toLowerCase();
         
@@ -97,7 +108,7 @@ export function useJira(): UseJiraReturn {
     // If no matches by email or name, return empty array
     console.log('No matching issues found for user');
     return [];
-  };
+  }, [issues]); // Only depend on issues
 
   return {
     issues,

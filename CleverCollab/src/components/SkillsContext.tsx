@@ -130,10 +130,10 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
 
   // Extract team members from issues whenever issues change
   useEffect(() => {
-    if (issues.length > 0) {
+    if (issues.length > 0 && teamMembers.length === 0) {
       extractTeamMembersFromIssues()
     }
-  }, [issues])
+  }, [issues, teamMembers.length])
 
   // Function to extract unique team members from issues
   const extractTeamMembersFromIssues = () => {

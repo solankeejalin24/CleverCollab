@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
-import { Send, Trash2 } from "lucide-react"
+import { Send, Trash2 } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -31,21 +31,29 @@ export function ChatUI({ className }: { className?: string }) {
 
   return (
     <div className={cn("flex flex-col h-full", className)}>
-      <div className="flex items-center justify-between border-b px-4 py-2 bg-muted/50">
+      <div className="flex items-center justify-between border-b px-4 py-3 bg-background/80 backdrop-blur-sm sticky top-0 z-10">
         <h2 className="font-semibold">Clever Collab Assistant</h2>
-        <Button variant="ghost" size="icon" onClick={clearMessages} aria-label="Clear chat">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={clearMessages} 
+          aria-label="Clear chat"
+          className="hover:bg-destructive/10 hover:text-destructive"
+        >
           <Trash2 className="h-4 w-4" />
         </Button>
       </div>
 
-      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
-        <div className="flex flex-col gap-4">
+      <ScrollArea className="flex-1" scrollHideDelay={100} type="always">
+        <div className="flex flex-col gap-4 p-4">
           {messages.map((message) => (
             <div
               key={message.id}
               className={cn(
                 "flex max-w-[80%] rounded-lg px-4 py-2",
-                message.role === "user" ? "ml-auto bg-primary text-primary-foreground" : "bg-muted text-foreground",
+                message.role === "user" 
+                  ? "ml-auto bg-primary text-primary-foreground" 
+                  : "bg-muted text-foreground",
               )}
             >
               {message.content}
@@ -54,7 +62,7 @@ export function ChatUI({ className }: { className?: string }) {
         </div>
       </ScrollArea>
 
-      <form onSubmit={handleSubmit} className="border-t p-4">
+      <form onSubmit={handleSubmit} className="border-t p-4 bg-background/80 backdrop-blur-sm">
         <div className="flex gap-2">
           <Input
             placeholder="Type your message..."
@@ -62,7 +70,11 @@ export function ChatUI({ className }: { className?: string }) {
             onChange={(e) => setInput(e.target.value)}
             className="flex-1"
           />
-          <Button type="submit" size="icon">
+          <Button 
+            type="submit" 
+            size="icon"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+          >
             <Send className="h-4 w-4" />
           </Button>
         </div>
@@ -70,4 +82,3 @@ export function ChatUI({ className }: { className?: string }) {
     </div>
   )
 }
-

@@ -13,7 +13,8 @@ import { toast } from "sonner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export function SkillsModal() {
-  const { skills, teamMembers, addSkill, removeSkill, isSkillsModalOpen, closeSkillsModal, fetchTeamMembers } = useSkills()
+  const { skills, teamMembers, addSkill, removeSkill, isSkillsModalOpen, closeSkillsModal, fetchTeamMembers } =
+    useSkills()
   const [newSkillName, setNewSkillName] = useState("")
   const [newSkillCategory, setNewSkillCategory] = useState("Other")
   const [selectedCommonSkill, setSelectedCommonSkill] = useState("")
@@ -23,70 +24,71 @@ export function SkillsModal() {
   useEffect(() => {
     if (isSkillsModalOpen) {
       // Only fetch team members once when the modal opens
-      fetchTeamMembers();
+      fetchTeamMembers()
     }
   }, [isSkillsModalOpen, fetchTeamMembers])
 
   const handleAddManualSkill = () => {
     if (newSkillName.trim()) {
-      const teamMember = selectedTeamMember !== "unassigned" 
-        ? teamMembers.find(tm => tm.id === selectedTeamMember)
-        : undefined;
-      
+      const teamMember =
+        selectedTeamMember !== "unassigned" ? teamMembers.find((tm) => tm.id === selectedTeamMember) : undefined
+
       addSkill({
         name: newSkillName.trim(),
         category: newSkillCategory,
         teamMemberId: selectedTeamMember !== "unassigned" ? selectedTeamMember : undefined,
-        teamMemberName: teamMember?.displayName
-      });
+        teamMemberName: teamMember?.displayName,
+      })
 
-      toast.success(`Added skill: ${newSkillName}${teamMember ? ` for ${teamMember.displayName}` : ''}`);
+      toast.success(`Added skill: ${newSkillName}${teamMember ? ` for ${teamMember.displayName}` : ""}`)
 
-      setNewSkillName("");
+      setNewSkillName("")
     }
-  };
+  }
 
   const handleAddCommonSkill = () => {
     if (selectedCommonSkill) {
-      const skill = commonSkills.find((s) => s.name === selectedCommonSkill);
-      const teamMember = selectedTeamMember !== "unassigned" 
-        ? teamMembers.find(tm => tm.id === selectedTeamMember)
-        : undefined;
-      
+      const skill = commonSkills.find((s) => s.name === selectedCommonSkill)
+      const teamMember =
+        selectedTeamMember !== "unassigned" ? teamMembers.find((tm) => tm.id === selectedTeamMember) : undefined
+
       if (skill) {
         addSkill({
           name: skill.name,
           category: skill.category,
           teamMemberId: selectedTeamMember !== "unassigned" ? selectedTeamMember : undefined,
-          teamMemberName: teamMember?.displayName
-        });
+          teamMemberName: teamMember?.displayName,
+        })
 
-        toast(`Added skill: ${skill.name}${teamMember ? ` for ${teamMember.displayName}` : ''}`);
+        toast(`Added skill: ${skill.name}${teamMember ? ` for ${teamMember.displayName}` : ""}`)
 
-        setSelectedCommonSkill("");
+        setSelectedCommonSkill("")
       }
     }
-  };
+  }
 
   const handleRemoveSkill = (id: string, name: string, teamMemberName?: string) => {
     removeSkill(id)
 
-    toast(`Removed skill: ${name}${teamMemberName ? ` for ${teamMemberName}` : ''}`)
+    toast(`Removed skill: ${name}${teamMemberName ? ` for ${teamMemberName}` : ""}`)
   }
 
   // Group skills by team member
-  const skillsByTeamMember = skills.reduce((acc, skill) => {
-    const key = skill.teamMemberId || 'unassigned'
-    if (!acc[key]) {
-      acc[key] = []
-    }
-    acc[key].push(skill)
-    return acc
-  }, {} as Record<string, typeof skills>)
+  const skillsByTeamMember = skills.reduce(
+    (acc, skill) => {
+      const key = skill.teamMemberId || "unassigned"
+      if (!acc[key]) {
+        acc[key] = []
+      }
+      acc[key].push(skill)
+      return acc
+    },
+    {} as Record<string, typeof skills>,
+  )
 
   return (
     <Dialog open={isSkillsModalOpen} onOpenChange={closeSkillsModal}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="w-[95vw] max-w-md mx-auto">
         <DialogHeader>
           <DialogTitle>Manage Team Skills</DialogTitle>
         </DialogHeader>
@@ -115,7 +117,8 @@ export function SkillsModal() {
             </Select>
             {teamMembers.length === 0 && (
               <p className="text-xs text-muted-foreground">
-                Note: Team members are extracted from Jira issues. Assign issues to team members in Jira to see them here.
+                Note: Team members are extracted from Jira issues. Assign issues to team members in Jira to see them
+                here.
               </p>
             )}
           </div>
@@ -179,7 +182,7 @@ export function SkillsModal() {
                 <TabsTrigger value="all">All Skills</TabsTrigger>
                 <TabsTrigger value="byMember">By Team Member</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="all">
                 <ScrollArea className="h-[200px] border rounded-md p-2">
                   {skills.length === 0 ? (
@@ -190,9 +193,7 @@ export function SkillsModal() {
                         <Badge key={skill.id} variant="secondary" className="flex items-center gap-1">
                           {skill.name}
                           {skill.teamMemberName && (
-                            <span className="text-xs text-muted-foreground ml-1">
-                              ({skill.teamMemberName})
-                            </span>
+                            <span className="text-xs text-muted-foreground ml-1">({skill.teamMemberName})</span>
                           )}
                           <button
                             onClick={() => handleRemoveSkill(skill.id, skill.name, skill.teamMemberName)}
@@ -207,7 +208,7 @@ export function SkillsModal() {
                   )}
                 </ScrollArea>
               </TabsContent>
-              
+
               <TabsContent value="byMember">
                 <ScrollArea className="h-[200px] border rounded-md p-2">
                   {Object.keys(skillsByTeamMember).length === 0 ? (
@@ -215,10 +216,11 @@ export function SkillsModal() {
                   ) : (
                     <div className="space-y-4">
                       {Object.entries(skillsByTeamMember).map(([memberId, memberSkills]) => {
-                        const memberName = memberId === 'unassigned' 
-                          ? 'Unassigned' 
-                          : teamMembers.find(m => m.id === memberId)?.displayName || 'Unknown Member';
-                        
+                        const memberName =
+                          memberId === "unassigned"
+                            ? "Unassigned"
+                            : teamMembers.find((m) => m.id === memberId)?.displayName || "Unknown Member"
+
                         return (
                           <div key={memberId} className="space-y-2">
                             <div className="flex items-center gap-2">
@@ -240,7 +242,7 @@ export function SkillsModal() {
                               ))}
                             </div>
                           </div>
-                        );
+                        )
                       })}
                     </div>
                   )}

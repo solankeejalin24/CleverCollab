@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import {
   DndContext,
   DragOverlay,
@@ -19,7 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { toast } from "sonner"
 import { useJira } from "@/hooks/useJira"
 import { FormattedJiraIssue } from "@/lib/jira"
-import { Loader2 } from "lucide-react"
+import { Loader2 } from 'lucide-react'
 
 export type Task = {
   id: string
@@ -52,37 +52,8 @@ export function KanbanBoard() {
   const [currentColumnId, setCurrentColumnId] = useState<string | null>(null)
   const [columns, setColumns] = useState<Column[]>([])
 
-  // Fetch Jira issues when component mounts
-  useEffect(() => {
-    fetchIssues()
-  }, [])
-
-  // Update columns when issues change
-  useEffect(() => {
-    // Convert Jira issues to Kanban columns
-    const newColumns: Column[] = [
-      {
-        id: "todo",
-        title: "To Do",
-        tasks: getIssuesByStatus("todo").map(issue => convertJiraIssueToTask(issue)),
-      },
-      {
-        id: "in-progress",
-        title: "In Progress",
-        tasks: getIssuesByStatus("in-progress").map(issue => convertJiraIssueToTask(issue)),
-      },
-      {
-        id: "done",
-        title: "Done",
-        tasks: getIssuesByStatus("done").map(issue => convertJiraIssueToTask(issue)),
-      },
-    ];
-    
-    setColumns(newColumns);
-  }, [issues, getIssuesByStatus]);
-
-  // Define the conversion function before using it
-  const convertJiraIssueToTask = (issue: FormattedJiraIssue): Task => {
+  // Define the conversion function with useCallback to prevent unnecessary re-renders
+  const convertJiraIssueToTask = useCallback((issue: FormattedJiraIssue): Task => {
     return {
       id: issue.id,
       content: issue.summary,
@@ -96,9 +67,43 @@ export function KanbanBoard() {
       completedDate: issue.completedDate,
       estimatedHours: issue.estimatedHours,
       description: issue.description,
-      parent: issue.parent
+      parent: issue.parent,
     }
-  }
+  }, [])
+
+  // Fetch Jira issues when component mounts
+  useEffect(() => {
+    console.log("KanbanBoard: Initial fetch of issues")
+    fetchIssues()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Empty dependency array to only run once on mount
+
+  // Update columns when issues change
+  useEffect(() => {
+    if (loading) return // Don't update columns while loading
+    
+    console.log("KanbanBoard: Updating columns with issues")
+    // Convert Jira issues to Kanban columns
+    const newColumns: Column[] = [
+      {
+        id: "todo",
+        title: "To Do",
+        tasks: getIssuesByStatus("todo").map(convertJiraIssueToTask),
+      },
+      {
+        id: "in-progress",
+        title: "In Progress",
+        tasks: getIssuesByStatus("in-progress").map(convertJiraIssueToTask),
+      },
+      {
+        id: "done",
+        title: "Done",
+        tasks: getIssuesByStatus("done").map(convertJiraIssueToTask),
+      },
+    ]
+
+    setColumns(newColumns)
+  }, [issues, getIssuesByStatus, convertJiraIssueToTask, loading])
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -157,68 +162,68 @@ export function KanbanBoard() {
 
     if (sourceColumnId && destColumnId && sourceColumnId !== destColumnId && movedTask) {
       // Create a copy of the columns to update the UI immediately
-      const updatedColumns = columns.map(column => {
+      const updatedColumns = columns.map((column) => {
         // Remove from source column
         if (column.id === sourceColumnId) {
           return {
             ...column,
-            tasks: column.tasks.filter(task => task.id !== active.id)
+            tasks: column.tasks.filter((task) => task.id !== active.id),
           }
         }
-        
+
         // Add to destination column
         if (column.id === destColumnId) {
           return {
             ...column,
-            tasks: [...column.tasks, movedTask!]
+            tasks: [...column.tasks, movedTask!],
           }
         }
-        
+
         return column
       })
-      
+
       // Update the UI immediately
       setColumns(updatedColumns)
-      
+
       // Show loading toast
       const toastId = toast.loading(`Moving task from ${sourceColumnId} to ${destColumnId}...`)
-      
+
       try {
         // Call the API to update the Jira issue status
-        const response = await fetch('/api/jira/update-status', {
-          method: 'POST',
+        const response = await fetch("/api/jira/update-status", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             issueKey: movedTask.key,
-            statusCategory: destColumnId
+            statusCategory: destColumnId,
           }),
         })
-        
+
         const data = await response.json()
-        
+
         if (data.success) {
           toast.success(`Task moved successfully in Jira`, {
-            id: toastId
+            id: toastId,
           })
         } else {
           // If the API call fails, show error but don't revert the UI
           // This is to prevent confusion when the UI and Jira get out of sync
           toast.error(`Note: Failed to update in Jira: ${data.error}`, {
-            id: toastId
+            id: toastId,
           })
-          
+
           // Don't refresh the board, just keep the UI state as is
           // This is because Kanban projects might have different workflows
           // and the UI state might be more accurate than what we get from Jira
         }
       } catch (error) {
-        console.error('Error updating Jira status:', error)
-        toast.error(`Error updating Jira: ${error instanceof Error ? error.message : 'Unknown error'}`, {
-          id: toastId
+        console.error("Error updating Jira status:", error)
+        toast.error(`Error updating Jira: ${error instanceof Error ? error.message : "Unknown error"}`, {
+          id: toastId,
         })
-        
+
         // Don't refresh the board, just keep the UI state as is
       }
     }
@@ -238,7 +243,7 @@ export function KanbanBoard() {
       // In a real implementation, you would create a new Jira issue here
       toast.success("New task created")
       toast.info("Note: This is a visual change only. In a real implementation, this would create a new Jira issue.")
-      
+
       setNewTaskDialogOpen(false)
       setNewTaskContent("")
     }
@@ -257,28 +262,24 @@ export function KanbanBoard() {
     return (
       <div className="flex flex-col items-center justify-center h-full">
         <p className="text-destructive mb-4">Error loading Jira issues: {error}</p>
-        <Button onClick={() => fetchIssues()}>Retry</Button>
+        <Button onClick={() => fetchIssues()} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+          Retry
+        </Button>
       </div>
     )
   }
 
   return (
-    <div className="h-full">
+    <div className="h-full pb-4">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-full">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
           {columns.map((column) => (
-            <KanbanColumn
-              key={column.id}
-              id={column.id}
-              title={column.title}
-              tasks={column.tasks}
-              onAddTask={() => handleAddTask(column.id)}
-            />
+            <KanbanColumn key={column.id} id={column.id} title={column.title} tasks={column.tasks} onAddTask={() => handleAddTask(column.id)} />
           ))}
         </div>
 
@@ -301,11 +302,12 @@ export function KanbanBoard() {
             <Button variant="outline" onClick={() => setNewTaskDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleCreateTask}>Create Task</Button>
+            <Button onClick={handleCreateTask} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+              Create Task
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
   )
 }
-
