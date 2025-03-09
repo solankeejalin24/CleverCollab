@@ -1,10 +1,10 @@
 "use client"
 
-import { SignUp } from "@clerk/nextjs"
+import { SignIn } from "@clerk/nextjs"
 import { useTheme } from "@/components/ThemeProvider"
 import { Logo } from "@/components/Logo"
 
-export default function SignUpPage() {
+export default function SignInPage() {
   const { theme } = useTheme()
 
   return (
@@ -16,9 +16,9 @@ export default function SignUpPage() {
       <div className="w-full max-w-md px-4">
         <div className="relative">
           {/* Decorative background elements */}
-          <div className="absolute -z-10 inset-0 bg-gradient-to-br from-accent/10 via-background to-primary/10 rounded-xl blur-xl opacity-50"></div>
+          <div className="absolute -z-10 inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10 rounded-xl blur-xl opacity-50"></div>
 
-          <SignUp
+          <SignIn
             appearance={{
               elements: {
                 formButtonPrimary: "bg-primary text-primary-foreground hover:bg-primary/90",
@@ -44,19 +44,18 @@ export default function SignUpPage() {
               },
               variables: {
                 borderRadius: "var(--radius)",
-                colorPrimary: "hsl(var(--primary))",
+                colorPrimary: "#0091FF", // Using a hex color instead of HSL variable
                 colorBackground: "transparent",
                 fontFamily: "var(--font-sans)",
                 fontSize: "16px",
               },
             }}
             routing="path"
-            path="/sign-up"
-            signInUrl="/sign-in"
+            path="/sign-in"
+            signUpUrl="/sign-up"
           />
         </div>
       </div>
     </div>
   )
-}
-
+} 

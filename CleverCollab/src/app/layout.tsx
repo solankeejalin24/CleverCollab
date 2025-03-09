@@ -1,6 +1,8 @@
-// src/app/layout.tsx
-import { Inter } from "next/font/google"
+import type React from "react"
 import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import { ClerkProvider } from "@clerk/nextjs"
+import "./globals.css"
 import { Header } from "@/components/Header"
 import { ThemeProvider } from "@/components/ThemeProvider"
 import { ChatbotProvider } from "@/components/ChatbotContext"
@@ -8,7 +10,6 @@ import { SkillsProvider } from "@/components/SkillsContext"
 import { ChatbotDrawer } from "@/components/ChatbotDrawer"
 import { SkillsModal } from "@/components/SkillsModal"
 import { Toaster } from "@/components/ui/sonner"
-import { ClerkProvider } from "@clerk/nextjs"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -23,13 +24,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <ClerkProvider
-      appearance={{
-        baseTheme: undefined
-      }}
-      signInUrl="/sign-in"
-      signUpUrl="/sign-up"
-    >
+    <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <body className={inter.className}>
           <ThemeProvider defaultTheme="light">
@@ -50,3 +45,4 @@ export default function RootLayout({
     </ClerkProvider>
   )
 }
+

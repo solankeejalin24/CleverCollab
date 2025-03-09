@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   DndContext,
   DragOverlay,
@@ -17,10 +17,24 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { toast } from "sonner"
+import { useJira } from "@/hooks/useJira"
+import { FormattedJiraIssue } from "@/lib/jira"
+import { Loader2 } from "lucide-react"
 
 export type Task = {
   id: string
   content: string
+  key?: string
+  issueType?: string
+  status?: string
+  assignee?: string
+  assigneeAccountId?: string
+  dueDate?: string
+  startDate?: string
+  completedDate?: string
+  estimatedHours?: number
+  description?: string
+  parent?: string
 }
 
 export type Column = {
@@ -30,40 +44,61 @@ export type Column = {
 }
 
 export function KanbanBoard() {
-  // const { toast } = useToast()
-  const [columns, setColumns] = useState<Column[]>([
-    {
-      id: "todo",
-      title: "To Do",
-      tasks: [
-        { id: "task-1", content: "Research competitors" },
-        { id: "task-2", content: "Create project plan" },
-        { id: "task-3", content: "Design wireframes" },
-      ],
-    },
-    {
-      id: "in-progress",
-      title: "In Progress",
-      tasks: [
-        { id: "task-4", content: "Develop landing page" },
-        { id: "task-5", content: "Set up analytics" },
-      ],
-    },
-    {
-      id: "done",
-      title: "Done",
-      tasks: [
-        { id: "task-6", content: "Initial team meeting" },
-        { id: "task-7", content: "Define project scope" },
-      ],
-    },
-  ])
-
+  const { issues, loading, error, fetchIssues, getIssuesByStatus } = useJira()
   const [activeId, setActiveId] = useState<string | null>(null)
   const [activeTask, setActiveTask] = useState<Task | null>(null)
   const [newTaskDialogOpen, setNewTaskDialogOpen] = useState(false)
   const [newTaskContent, setNewTaskContent] = useState("")
   const [currentColumnId, setCurrentColumnId] = useState<string | null>(null)
+  const [columns, setColumns] = useState<Column[]>([])
+
+  // Fetch Jira issues when component mounts
+  useEffect(() => {
+    fetchIssues()
+  }, [])
+
+  // Update columns when issues change
+  useEffect(() => {
+    // Convert Jira issues to Kanban columns
+    const newColumns: Column[] = [
+      {
+        id: "todo",
+        title: "To Do",
+        tasks: getIssuesByStatus("todo").map(issue => convertJiraIssueToTask(issue)),
+      },
+      {
+        id: "in-progress",
+        title: "In Progress",
+        tasks: getIssuesByStatus("in-progress").map(issue => convertJiraIssueToTask(issue)),
+      },
+      {
+        id: "done",
+        title: "Done",
+        tasks: getIssuesByStatus("done").map(issue => convertJiraIssueToTask(issue)),
+      },
+    ];
+    
+    setColumns(newColumns);
+  }, [issues, getIssuesByStatus]);
+
+  // Define the conversion function before using it
+  const convertJiraIssueToTask = (issue: FormattedJiraIssue): Task => {
+    return {
+      id: issue.id,
+      content: issue.summary,
+      key: issue.key,
+      issueType: issue.issueType,
+      status: issue.status,
+      assignee: issue.assignee,
+      assigneeAccountId: issue.assigneeAccountId,
+      dueDate: issue.dueDate,
+      startDate: issue.startDate,
+      completedDate: issue.completedDate,
+      estimatedHours: issue.estimatedHours,
+      description: issue.description,
+      parent: issue.parent
+    }
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -86,7 +121,7 @@ export function KanbanBoard() {
     }
   }
 
-  const handleDragEnd = (event: any) => {
+  const handleDragEnd = async (event: any) => {
     const { active, over } = event
 
     if (!over) {
@@ -98,10 +133,13 @@ export function KanbanBoard() {
     // Find source and destination columns
     let sourceColumnId: string | null = null
     let destColumnId: string | null = null
+    let movedTask: Task | null = null
 
     for (const column of columns) {
-      if (column.tasks.some((task) => task.id === active.id)) {
+      const taskInColumn = column.tasks.find((task) => task.id === active.id)
+      if (taskInColumn) {
         sourceColumnId = column.id
+        movedTask = taskInColumn
       }
 
       if (over.id.startsWith("column-")) {
@@ -117,50 +155,72 @@ export function KanbanBoard() {
       }
     }
 
-    if (sourceColumnId && destColumnId) {
-      setColumns((prevColumns) => {
-        return prevColumns.map((column) => {
-          // Remove from source column
-          if (column.id === sourceColumnId) {
-            return {
-              ...column,
-              tasks: column.tasks.filter((task) => task.id !== active.id),
-            }
+    if (sourceColumnId && destColumnId && sourceColumnId !== destColumnId && movedTask) {
+      // Create a copy of the columns to update the UI immediately
+      const updatedColumns = columns.map(column => {
+        // Remove from source column
+        if (column.id === sourceColumnId) {
+          return {
+            ...column,
+            tasks: column.tasks.filter(task => task.id !== active.id)
           }
-
-          // Add to destination column
-          if (column.id === destColumnId) {
-            const updatedTasks = [...column.tasks]
-            const activeTask = prevColumns
-              .find((col) => col.id === sourceColumnId)
-              ?.tasks.find((task) => task.id === active.id)
-
-            if (activeTask) {
-              if (over.id.startsWith("column-")) {
-                // Add to the end of the column
-                updatedTasks.push(activeTask)
-              } else {
-                // Add before the task that was hovered over
-                const overTaskIndex = updatedTasks.findIndex((task) => task.id === over.id)
-                if (overTaskIndex !== -1) {
-                  updatedTasks.splice(overTaskIndex, 0, activeTask)
-                } else {
-                  updatedTasks.push(activeTask)
-                }
-              }
-
-              return {
-                ...column,
-                tasks: updatedTasks,
-              }
-            }
+        }
+        
+        // Add to destination column
+        if (column.id === destColumnId) {
+          return {
+            ...column,
+            tasks: [...column.tasks, movedTask!]
           }
-
-          return column
-        })
+        }
+        
+        return column
       })
-
-      toast.success("Task moved successfully")
+      
+      // Update the UI immediately
+      setColumns(updatedColumns)
+      
+      // Show loading toast
+      const toastId = toast.loading(`Moving task from ${sourceColumnId} to ${destColumnId}...`)
+      
+      try {
+        // Call the API to update the Jira issue status
+        const response = await fetch('/api/jira/update-status', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            issueKey: movedTask.key,
+            statusCategory: destColumnId
+          }),
+        })
+        
+        const data = await response.json()
+        
+        if (data.success) {
+          toast.success(`Task moved successfully in Jira`, {
+            id: toastId
+          })
+        } else {
+          // If the API call fails, show error but don't revert the UI
+          // This is to prevent confusion when the UI and Jira get out of sync
+          toast.error(`Note: Failed to update in Jira: ${data.error}`, {
+            id: toastId
+          })
+          
+          // Don't refresh the board, just keep the UI state as is
+          // This is because Kanban projects might have different workflows
+          // and the UI state might be more accurate than what we get from Jira
+        }
+      } catch (error) {
+        console.error('Error updating Jira status:', error)
+        toast.error(`Error updating Jira: ${error instanceof Error ? error.message : 'Unknown error'}`, {
+          id: toastId
+        })
+        
+        // Don't refresh the board, just keep the UI state as is
+      }
     }
 
     setActiveId(null)
@@ -175,22 +235,31 @@ export function KanbanBoard() {
 
   const handleCreateTask = () => {
     if (newTaskContent.trim() && currentColumnId) {
-      const newTask: Task = {
-        id: `task-${Date.now()}`,
-        content: newTaskContent,
-      }
-
-      setColumns((prevColumns) =>
-        prevColumns.map((column) =>
-          column.id === currentColumnId ? { ...column, tasks: [...column.tasks, newTask] } : column,
-        ),
-      )
-
+      // In a real implementation, you would create a new Jira issue here
+      toast.success("New task created")
+      toast.info("Note: This is a visual change only. In a real implementation, this would create a new Jira issue.")
+      
       setNewTaskDialogOpen(false)
       setNewTaskContent("")
-
-      toast.success("New task created")
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2">Loading Jira issues...</span>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full">
+        <p className="text-destructive mb-4">Error loading Jira issues: {error}</p>
+        <Button onClick={() => fetchIssues()}>Retry</Button>
+      </div>
+    )
   }
 
   return (

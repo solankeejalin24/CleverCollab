@@ -85,3 +85,50 @@
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
+/* Clerk customizations */
+.cl-formButtonPrimary {
+  @apply bg-primary text-primary-foreground hover:bg-primary/90;
+}
+
+.cl-card {
+  @apply bg-background border border-border shadow-sm;
+}
+
+.cl-headerTitle,
+.cl-headerSubtitle,
+.cl-formFieldLabel,
+.cl-formFieldInput,
+.cl-identityPreviewText {
+  @apply text-foreground;
+}
+
+.cl-footerActionLink,
+.cl-identityPreviewEditButton,
+.cl-formFieldAction {
+  @apply text-primary hover:text-primary/90;
+}
+
+.cl-formFieldErrorText {
+  @apply text-destructive;
+}
+
+.cl-socialButtonsBlockButton {
+  @apply border-border text-foreground hover:bg-muted;
+}
+
+.cl-socialButtonsBlockButtonText {
+  @apply text-foreground;
+}
+
+.cl-otpCodeFieldInput {
+  @apply bg-background border-input text-foreground;
+}
+
+.cl-dividerLine {
+  @apply bg-border;
+}
+
+.cl-dividerText {
+  @apply text-muted-foreground;
+}
+
