@@ -1,22 +1,33 @@
 "use client"
 
-import { createContext, useContext, useState, type ReactNode, useEffect } from "react"
+import { createContext, useContext, useState, type ReactNode, useEffect, useCallback } from "react"
 import { saveSkillsToFile, loadSkillsFromFile } from "@/app/actions/skills"
 import { toast } from "sonner"
+
+export type TeamMember = {
+  id: string
+  accountId: string
+  displayName: string
+  emailAddress?: string
+}
 
 export type Skill = {
   id: string
   name: string
   category: string
+  teamMemberId?: string
+  teamMemberName?: string
 }
 
 type SkillsContextType = {
   skills: Skill[]
+  teamMembers: TeamMember[]
   addSkill: (skill: Omit<Skill, "id">) => void
   removeSkill: (id: string) => void
   isSkillsModalOpen: boolean
   openSkillsModal: () => void
   closeSkillsModal: () => void
+  fetchTeamMembers: () => void
 }
 
 const SkillsContext = createContext<SkillsContextType | undefined>(undefined)
@@ -47,8 +58,10 @@ export const commonSkills = [
 
 export function SkillsProvider({ children }: { children: ReactNode }) {
   const [skills, setSkills] = useState<Skill[]>([])
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
   const [isSkillsModalOpen, setIsSkillsModalOpen] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
+  const [issues, setIssues] = useState<any[]>([])
 
   // Load skills from file on initial render
   useEffect(() => {
@@ -75,7 +88,72 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
     }
 
     loadSkills()
+    // Don't call fetchTeamMembers here to avoid infinite loops
   }, [])
+
+  // Fetch Jira issues only once when needed
+  const fetchJiraIssues = useCallback(async () => {
+    try {
+      // Only fetch if we don't already have issues
+      if (issues.length === 0) {
+        const response = await fetch('/api/jira?jql=issuetype in (Story, Task, Bug)')
+        const data = await response.json()
+
+        if (data.success) {
+          setIssues(data.data)
+          console.log('Fetched Jira issues for team member extraction:', data.data.length)
+        } else {
+          console.error('Failed to fetch Jira issues:', data.error)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching Jira issues:', error)
+    }
+  }, [issues.length])
+
+  // Extract team members from issues
+  const fetchTeamMembers = useCallback(() => {
+    // If we already have team members, don't fetch again
+    if (teamMembers.length > 0) {
+      console.log('Using existing team members:', teamMembers.length)
+      return
+    }
+
+    // First try to extract from existing issues
+    if (issues.length > 0) {
+      extractTeamMembersFromIssues()
+    } else {
+      // If no issues, fetch them first
+      fetchJiraIssues()
+    }
+  }, [teamMembers.length, issues.length, fetchJiraIssues])
+
+  // Extract team members from issues whenever issues change
+  useEffect(() => {
+    if (issues.length > 0) {
+      extractTeamMembersFromIssues()
+    }
+  }, [issues])
+
+  // Function to extract unique team members from issues
+  const extractTeamMembersFromIssues = () => {
+    const uniqueMembers = new Map<string, TeamMember>()
+
+    issues.forEach(issue => {
+      if (issue.assigneeAccountId && issue.assignee && issue.assignee !== 'Unassigned') {
+        uniqueMembers.set(issue.assigneeAccountId, {
+          id: issue.assigneeAccountId,
+          accountId: issue.assigneeAccountId,
+          displayName: issue.assignee,
+          emailAddress: issue.assigneeEmail
+        })
+      }
+    })
+
+    const extractedMembers = Array.from(uniqueMembers.values())
+    console.log('Extracted team members from issues:', extractedMembers.length)
+    setTeamMembers(extractedMembers)
+  }
 
   // Save skills to localStorage and file whenever they change
   useEffect(() => {
@@ -98,14 +176,37 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
   }, [skills, isInitialized, toast])
 
   const addSkill = (skill: Omit<Skill, "id">) => {
-    // Check if skill already exists
+    // Check if skill already exists for the same team member
     const exists = skills.some(
       (s) =>
-        s.name.toLowerCase() === skill.name.toLowerCase() && s.category.toLowerCase() === skill.category.toLowerCase(),
+        s.name.toLowerCase() === skill.name.toLowerCase() && 
+        s.category.toLowerCase() === skill.category.toLowerCase() &&
+        (
+          // Both are unassigned
+          (!s.teamMemberId && !skill.teamMemberId) ||
+          // Both are assigned to the same team member
+          (s.teamMemberId === skill.teamMemberId)
+        )
     )
 
     if (!exists) {
-      setSkills((prev) => [...prev, { ...skill, id: Date.now().toString() }])
+      // If a team member is selected, make sure we have their information
+      if (skill.teamMemberId) {
+        const teamMember = teamMembers.find(tm => tm.id === skill.teamMemberId);
+        if (teamMember) {
+          // Ensure we store the team member's name and account ID
+          setSkills((prev) => [...prev, { 
+            ...skill, 
+            id: Date.now().toString(),
+            teamMemberId: teamMember.accountId,
+            teamMemberName: teamMember.displayName
+          }]);
+          return;
+        }
+      }
+      
+      // If no team member or team member not found, just add the skill
+      setSkills((prev) => [...prev, { ...skill, id: Date.now().toString() }]);
     }
   }
 
@@ -120,11 +221,13 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
     <SkillsContext.Provider
       value={{
         skills,
+        teamMembers,
         addSkill,
         removeSkill,
         isSkillsModalOpen,
         openSkillsModal,
         closeSkillsModal,
+        fetchTeamMembers,
       }}
     >
       {children}
