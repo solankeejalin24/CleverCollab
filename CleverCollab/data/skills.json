@@ -42,13 +42,6 @@
     "id": "1741486441967"
   },
   {
-    "name": "React",
-    "category": "Framework",
-    "teamMemberId": "712020:f15989c0-31c3-4d67-9f58-4195acb97ddc",
-    "teamMemberName": "Arya",
-    "id": "1741486457192"
-  },
-  {
     "name": "Node.js",
     "category": "Runtime",
     "teamMemberId": "712020:f15989c0-31c3-4d67-9f58-4195acb97ddc",
@@ -103,5 +96,12 @@
     "teamMemberId": "62bbca19ec4c0d377f9fa23a",
     "teamMemberName": "Jalin Solankee",
     "id": "1741488059562"
+  },
+  {
+    "name": "Docker",
+    "category": "DevOps",
+    "teamMemberId": "61539e9d9cdb93007221a33c",
+    "teamMemberName": "Daksh Prajapati",
+    "id": "1741493431643"
   }
 ]

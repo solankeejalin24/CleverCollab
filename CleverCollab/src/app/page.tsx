@@ -194,7 +194,7 @@ export default function Home() {
             <Button 
               asChild 
               size="lg" 
-              className="px-8 bg-[#366994] hover:bg-[#366994]/80 text-white transition-colors"
+              className="px-8 bg-[#212245] hover:bg-[#212245]/80 text-white transition-colors"
             >
               <Link href="/kanban">Go to Kanban Board</Link>
             </Button>
@@ -202,7 +202,7 @@ export default function Home() {
             <Button
               asChild
               size="lg"
-              className="px-8 bg-[#6cac48] hover:bg-[#6cac48]/80 text-white transition-colors"
+              className="px-8 bg-[#64c6c4] hover:bg-[#64c6c4]/80 text-white transition-colors"
             >
               <Link href="/help" onClick={openChatbot}>Open AI Chatbot</Link>
             </Button>
@@ -211,7 +211,7 @@ export default function Home() {
           <Button
             onClick={openSkillsModal}
             size="lg"
-            className="px-8 bg-[#ffe052] hover:bg-[#ffe052]/80 text-white transition-colors"
+            className="px-8 bg-[#a4cb6a] hover:bg-[#a4cb6a]/80 text-white transition-colors"
           >
             Manage Skills
           </Button>
