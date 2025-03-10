@@ -84,12 +84,12 @@ export default function Home() {
         </SignedOut>
 
         <div className="flex-1 flex flex-col items-center justify-center py-12 text-center">
-          <div className="mb-8">
+          <div className="mb-1">
             <Logo size="large" />
           </div>
 
           <SignedIn>
-            <h2 className="text-2xl font-medium mb-8">Welcome, {user?.firstName || user?.username || "User"}!</h2>
+            <h2 className="text-2xl font-medium mb-6">Welcome, {user?.firstName || user?.username || "User"}!</h2>
 
             <div className="w-full max-w-4xl mb-12">
               <Card className="bg-card border shadow-sm overflow-hidden">
