@@ -44,8 +44,8 @@ export function KanbanColumn({ id, title, tasks, onAddTask }: KanbanColumnProps)
         <ScrollArea className="h-[calc(100vh-12rem)]" scrollHideDelay={100}>
           <div 
             ref={setNodeRef} 
-            className="space-y-2 min-h-[200px] p-3"
-            style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+            className="space-y-2 min-h-[200px]"
+            style={{ display: "flex", flexDirection: "column", alignItems: "center", margin:"0 auto", width: "100%", }}
           >
             <SortableContext items={tasks.map((task) => task.id)} strategy={verticalListSortingStrategy}>
               {tasks.map((task) => (

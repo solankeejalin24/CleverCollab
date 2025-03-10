@@ -277,7 +277,7 @@ export function KanbanBoard() {
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-full">
           {columns.map((column) => (
             <KanbanColumn key={column.id} id={column.id} title={column.title} tasks={column.tasks} onAddTask={() => handleAddTask(column.id)} />
           ))}
