@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { FormattedJiraIssue } from '@/lib/jira';
+import { useUser } from '@clerk/nextjs';
 
 interface UseJiraReturn {
   issues: FormattedJiraIssue[];
@@ -8,6 +9,7 @@ interface UseJiraReturn {
   fetchIssues: (jql?: string) => Promise<void>;
   getIssuesByStatus: (statusCategory: 'todo' | 'in-progress' | 'done') => FormattedJiraIssue[];
   getMyIssues: (userEmail?: string, userName?: string) => FormattedJiraIssue[];
+  currentUserIssues: FormattedJiraIssue[];
 }
 
 export function useJira(): UseJiraReturn {
@@ -15,6 +17,10 @@ export function useJira(): UseJiraReturn {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userAccountIds, setUserAccountIds] = useState<Record<string, string>>({});
+  const [currentUserIssues, setCurrentUserIssues] = useState<FormattedJiraIssue[]>([]);
+  const { user } = useUser();
+  const userEmail = user?.emailAddresses?.[0]?.emailAddress;
+  const userName = user?.firstName || user?.lastName || user?.username;
 
   // Effect to extract unique account IDs and their names for matching
   useEffect(() => {
@@ -110,6 +116,18 @@ export function useJira(): UseJiraReturn {
     return [];
   }, [issues]); // Only depend on issues
 
+  // Update current user's issues when issues or user changes
+  useEffect(() => {
+    if (issues.length > 0 && (userEmail || userName)) {
+      const myIssues = getMyIssues(
+        userEmail || undefined, 
+        userName || undefined
+      );
+      setCurrentUserIssues(myIssues);
+      console.log(`Found ${myIssues.length} issues for current user:`, { userEmail, userName });
+    }
+  }, [issues, userEmail, userName, getMyIssues]);
+
   return {
     issues,
     loading,
@@ -117,5 +135,6 @@ export function useJira(): UseJiraReturn {
     fetchIssues,
     getIssuesByStatus,
     getMyIssues,
+    currentUserIssues,
   };
 } 
