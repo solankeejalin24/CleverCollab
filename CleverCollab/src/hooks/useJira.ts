@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { FormattedJiraIssue } from '@/lib/jira';
 import { useUser } from '@clerk/nextjs';
+import teamMembers from '@/data/team-members.json';
 
 interface UseJiraReturn {
   issues: FormattedJiraIssue[];
@@ -46,10 +47,13 @@ export function useJira(): UseJiraReturn {
   }, [issues, userAccountIds]);
 
   // Use useCallback to ensure the function reference is stable
-  const fetchIssues = useCallback(async (jql = 'issuetype in (Story, Task, Bug)') => {
+  const fetchIssues = useCallback(async (jql = 'project is not EMPTY ORDER BY assignee') => {
     try {
       setLoading(true);
       setError(null);
+
+      // Log the JQL query being used
+      console.log('Fetching issues with JQL:', jql);
 
       const response = await fetch(`/api/jira?jql=${encodeURIComponent(jql)}`);
       const data = await response.json();
@@ -57,6 +61,14 @@ export function useJira(): UseJiraReturn {
       if (!data.success) {
         throw new Error(data.error || 'Failed to fetch Jira issues');
       }
+
+      // Log assignee information for debugging
+      console.log('All issues with assignees:', data.data.map((issue: FormattedJiraIssue) => ({
+        key: issue.key,
+        assignee: issue.assignee,
+        accountId: issue.assigneeAccountId,
+        email: issue.assigneeEmail
+      })));
 
       setIssues(data.data);
       console.log('Fetched issues:', data.data.length);
@@ -81,6 +93,7 @@ export function useJira(): UseJiraReturn {
     
     // Try to match by email first
     if (userEmail) {
+      console.log('Trying email match for:', userEmail);
       const emailMatches = issues.filter(issue => 
         issue.assigneeEmail?.toLowerCase() === userEmail.toLowerCase()
       );
@@ -91,18 +104,51 @@ export function useJira(): UseJiraReturn {
       }
     }
     
-    // Try to match by name
+    // Try to find the team member by name
     if (userName) {
+      const searchName = userName.toLowerCase();
+      console.log('Looking for team member with name:', searchName);
+      
+      const teamMember = teamMembers.members.find(member => {
+        const isMatch = member.name.toLowerCase() === searchName ||
+          member.shortNames.some(shortName => shortName.toLowerCase() === searchName);
+        if (isMatch) {
+          console.log('Found team member:', member);
+        }
+        return isMatch;
+      });
+
+      if (teamMember) {
+        console.log('Found team member, searching by account ID:', teamMember.accountId);
+        const accountMatches = issues.filter(issue => {
+          const isMatch = issue.assigneeAccountId === teamMember.accountId;
+          if (isMatch) {
+            console.log('Found matching issue:', issue.key);
+          }
+          return isMatch;
+        });
+        
+        if (accountMatches.length > 0) {
+          console.log('Found issues by account ID match:', accountMatches.length);
+          return accountMatches;
+        } else {
+          console.log('No issues found for account ID:', teamMember.accountId);
+        }
+      } else {
+        console.log('No team member found with name:', searchName);
+      }
+
+      // Fallback to name matching if no account ID match
+      console.log('Trying fallback name matching');
       const nameMatches = issues.filter(issue => {
         if (!issue.assignee || issue.assignee === 'Unassigned') return false;
         
         const assigneeName = issue.assignee.toLowerCase();
-        const searchName = userName.toLowerCase();
-        
-        // Check if the assignee name contains any part of the user's name
-        // or if the user's name contains any part of the assignee name
-        return assigneeName.includes(searchName) || 
-               searchName.includes(assigneeName);
+        const isMatch = assigneeName.includes(searchName) || searchName.includes(assigneeName);
+        if (isMatch) {
+          console.log('Found name match:', issue.key, issue.assignee);
+        }
+        return isMatch;
       });
       
       if (nameMatches.length > 0) {
@@ -111,10 +157,9 @@ export function useJira(): UseJiraReturn {
       }
     }
     
-    // If no matches by email or name, return empty array
     console.log('No matching issues found for user');
     return [];
-  }, [issues]); // Only depend on issues
+  }, [issues]);
 
   // Update current user's issues when issues or user changes
   useEffect(() => {

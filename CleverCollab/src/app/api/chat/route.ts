@@ -67,10 +67,23 @@ export async function POST(req: Request) {
     // Fetch Jira issues
     let userIssues: FormattedJiraIssue[] = [];
     let allIssues: FormattedJiraIssue[] = [];
+    let tasksByAssignee = '';
+    
     try {
       const jiraService = new JiraService();
-      const issues = await jiraService.getIssues('issuetype in (Story, Task, Bug)', 1000);
-      allIssues = issues.map(issue => jiraService.formatIssue(issue));
+      
+      // Log all assignee information for debugging
+      console.log('Fetching all issues to check assignees...');
+      const allIssuesResponse = await jiraService.getIssues('project is not EMPTY ORDER BY assignee', 5000);
+      console.log('All assignees:', allIssuesResponse.map(issue => ({
+        key: issue.key,
+        assignee: issue.fields.assignee?.displayName,
+        accountId: issue.fields.assignee?.accountId,
+        email: issue.fields.assignee?.emailAddress
+      })));
+
+      // Format all issues
+      allIssues = allIssuesResponse.map(issue => jiraService.formatIssue(issue));
       
       // Filter issues for the current user
       if (userEmail) {
@@ -80,6 +93,32 @@ export async function POST(req: Request) {
       }
       
       console.log(`Retrieved ${allIssues.length} total issues and ${userIssues.length} user issues from Jira`);
+      
+      // Group issues by assignee for debugging
+      const issuesByAssignee = new Map<string, FormattedJiraIssue[]>();
+      allIssues.forEach(issue => {
+        const assignee = issue.assignee || 'Unassigned';
+        if (!issuesByAssignee.has(assignee)) {
+          issuesByAssignee.set(assignee, []);
+        }
+        issuesByAssignee.get(assignee)?.push(issue);
+      });
+      
+      console.log('Issues grouped by assignee:', 
+        Array.from(issuesByAssignee.entries()).map(([assignee, issues]) => ({
+          assignee,
+          count: issues.length,
+          issues: issues.map(i => i.key)
+        }))
+      );
+
+      // Format tasks by assignee for the system message
+      tasksByAssignee = Array.from(issuesByAssignee.entries())
+        .map(([assignee, issues]: [string, FormattedJiraIssue[]]) => 
+          `### ${assignee}:\n${issues.map((issue: FormattedJiraIssue) => 
+            `- ${issue.key}: ${issue.summary} (Type: ${issue.issueType}, Status: ${issue.status}${issue.dueDate ? `, Due: ${issue.dueDate}` : ''})${issue.estimatedHours ? `, Est. Hours: ${issue.estimatedHours}` : ''}`
+          ).join('\n')}`
+        ).join('\n\n');
     } catch (error) {
       console.error('Error fetching Jira issues:', error);
     }
@@ -165,11 +204,8 @@ ${userSkillsFormatted || 'No skills recorded'}
 TEAM SKILLS:
 ${teamSkillsFormatted || 'No team skills recorded'}
 
-PROJECT TASKS:
-${allIssues.slice(0, 20).map(issue => 
-  `${issue.key}: ${issue.summary} (Assignee: ${issue.assignee}, Status: ${issue.status}, Due: ${issue.dueDate || 'Not set'})`
-).join('\n')}
-${allIssues.length > 20 ? `\n...and ${allIssues.length - 20} more tasks` : ''}
+PROJECT TASKS BY ASSIGNEE:
+${tasksByAssignee}
 
 You have access to this data to help answer questions about task assignments, prioritization, workload management, and identifying project bottlenecks.`
       });
@@ -210,41 +246,49 @@ You have access to this data to help answer questions about task assignments, pr
     // Create a transform stream to extract just the content from the OpenAI stream
     const transformStream = new TransformStream({
       async transform(chunk, controller) {
-        // Convert the chunk to text
-        const text = new TextDecoder().decode(chunk);
-        
-        // Process each line in the chunk
-        const lines = text.split('\n').filter(line => line.trim() !== '');
-        
-        for (const line of lines) {
-          // Skip [DONE] or empty lines
-          if (line.includes('[DONE]') || !line.trim()) continue;
+        try {
+          // Convert the chunk to text
+          const text = new TextDecoder().decode(chunk);
           
-          // Extract the data part
-          if (line.startsWith('data: ')) {
-            const data = line.substring(6).trim();
+          // Process each line in the chunk
+          const lines = text.split('\n').filter(line => line.trim() !== '');
+          
+          for (const line of lines) {
+            // Skip [DONE] or empty lines
+            if (line.includes('[DONE]') || !line.trim()) continue;
             
-            // Skip empty data
-            if (!data) continue;
-            
-            try {
-              // Parse the JSON data
-              const json = JSON.parse(data);
+            // Extract the data part
+            if (line.startsWith('data: ')) {
+              const data = line.substring(6).trim();
               
-              // Extract the content if available
-              if (json.choices && 
-                  json.choices[0] && 
-                  json.choices[0].delta && 
-                  json.choices[0].delta.content) {
-                // Get just the content
-                const content = json.choices[0].delta.content;
-                // Send only the content
-                controller.enqueue(new TextEncoder().encode(content));
+              // Skip empty data
+              if (!data) continue;
+              
+              try {
+                // Parse the JSON data
+                const json = JSON.parse(data);
+                
+                // Extract the content if available
+                if (json.choices && 
+                    json.choices[0] && 
+                    json.choices[0].delta && 
+                    json.choices[0].delta.content) {
+                  // Get just the content
+                  const content = json.choices[0].delta.content;
+                  // Send only the content
+                  controller.enqueue(new TextEncoder().encode(content));
+                }
+              } catch (error) {
+                console.error('Error parsing JSON line:', error);
+                console.log('Problematic line:', data);
+                // Don't throw, just continue with the next line
+                continue;
               }
-            } catch (error) {
-              console.error('Error parsing JSON:', error);
             }
           }
+        } catch (error) {
+          console.error('Error in transform:', error);
+          // Don't throw, just log the error
         }
       }
     });

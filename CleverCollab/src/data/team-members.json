@@ -1,0 +1,24 @@
+{
+  "members": [
+    {
+      "name": "Varad Parte",
+      "shortNames": ["Varad"],
+      "accountId": "712020:2e098a02-b8c2-4a7c-947c-2298d7e58340"
+    },
+    {
+      "name": "Jalin Solankee",
+      "shortNames": ["Jalin"],
+      "accountId": "712020:a12bc346-e66f-4a0c-947c-2298d7e58340"
+    },
+    {
+      "name": "Arya",
+      "shortNames": ["Arya", "Aryan"],
+      "accountId": "712020:5f6e7d8c-9a0b-1c2d-947c-2298d7e58340"
+    },
+    {
+      "name": "Daksh Prajapati",
+      "shortNames": ["Daksh"],
+      "accountId": "712020:3f4e5d6c-7a8b-9c0d-947c-2298d7e58340"
+    }
+  ]
+} 

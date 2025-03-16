@@ -1,6 +1,6 @@
 "use client"
 
-import { FormEvent, useRef, useEffect } from "react"
+import { FormEvent, useRef, useEffect, useCallback } from "react"
 import { Send, Trash2, Loader2 } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,6 +10,7 @@ import { useChat } from "ai/react"
 import { useChatbot } from "./ChatbotContext"
 import { useUser } from "@clerk/nextjs"
 import { useJira } from "@/hooks/useJira"
+import { FormattedJiraIssue } from "@/lib/jira"
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
@@ -57,12 +58,21 @@ When answering questions:
 2. Explain your reasoning process
 3. Be specific about task assignments, priorities, and potential issues
 4. Consider both skills and current workload when making recommendations
+5. Always provide comprehensive information about tasks, including their type, status, and details
 
 Current user: ${userName || 'Unknown'} (${userEmail || 'No email'})
+
 Current user's assigned tasks: ${currentUserIssues.length > 0 
-  ? currentUserIssues.map(issue => `${issue.key}: ${issue.summary} (${issue.status})`).join(', ') 
+  ? currentUserIssues.map(issue => 
+      `- ${issue.key}: ${issue.summary} (Type: ${issue.issueType}, Status: ${issue.status}${issue.dueDate ? `, Due: ${issue.dueDate}` : ''})${issue.estimatedHours ? `, Est. Hours: ${issue.estimatedHours}` : ''}`
+    ).join('\n') 
   : 'None'}
-Total project tasks: ${issues.length}
+
+All project tasks: ${issues.length > 0 
+  ? '\n' + issues.map(issue => 
+      `- ${issue.key}: ${issue.summary} (Type: ${issue.issueType}, Status: ${issue.status}, Assignee: ${issue.assignee}${issue.dueDate ? `, Due: ${issue.dueDate}` : ''})${issue.estimatedHours ? `, Est. Hours: ${issue.estimatedHours}` : ''}`
+    ).join('\n')
+  : 'None'}
 
 You can answer questions such as:
 - "Who should I assign task XYZ to?"
@@ -70,6 +80,10 @@ You can answer questions such as:
 - "Who is likely to miss their deadline?"
 - "How should I prioritize my tasks to finish everything on time?"
 - "Predict potential project bottlenecks."
+- "Show me all tasks assigned to [name]"
+- "What's the workload distribution across the team?"
+- "List all bugs in the project"
+- "Show me all high-priority tasks"
 
 Current date: ${new Date().toLocaleDateString()}`;
   
@@ -153,6 +167,39 @@ Current date: ${new Date().toLocaleDateString()}`;
       console.error("Chat error detected:", error);
     }
   }, [error]);
+
+  const getMyIssues = useCallback((userEmail?: string, userName?: string): FormattedJiraIssue[] => {
+    if (!userEmail && !userName) return [];
+    
+    // Try to match by email first
+    if (userEmail) {
+      const emailMatches = issues.filter(issue => 
+        issue.assigneeEmail?.toLowerCase() === userEmail.toLowerCase()
+      );
+      
+      if (emailMatches.length > 0) {
+        return emailMatches;
+      }
+    }
+    
+    // Try to match by name
+    if (userName) {
+      const nameMatches = issues.filter(issue => {
+        if (!issue.assignee || issue.assignee === 'Unassigned') return false;
+        
+        const assigneeName = issue.assignee.toLowerCase();
+        const searchName = userName.toLowerCase();
+        
+        return assigneeName.includes(searchName) || searchName.includes(assigneeName);
+      });
+      
+      if (nameMatches.length > 0) {
+        return nameMatches;
+      }
+    }
+    
+    return [];
+  }, [issues]);
 
   return (
     <div className={cn("flex flex-col h-full", className)}>

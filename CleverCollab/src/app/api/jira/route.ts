@@ -5,8 +5,8 @@ import { serverEnv } from '@/lib/env';
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const jql = searchParams.get('jql') || 'issuetype in (Story, Task, Bug)';
-    const maxResults = parseInt(searchParams.get('maxResults') || '1000');
+    const jql = searchParams.get('jql') || 'project is not EMPTY';
+    const maxResults = parseInt(searchParams.get('maxResults') || '5000');
 
     console.log('Jira API request:', { 
       jql, 
