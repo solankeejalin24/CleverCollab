@@ -522,14 +522,14 @@ Current date: ${new Date().toLocaleDateString()}`;
             >
               {message.role === "assistant" ? (
                 <>
-                  <div className="prose prose-sm dark:prose-invert max-w-none">
-                    <ReactMarkdown 
-                      remarkPlugins={[remarkGfm]}
-                      components={MarkdownComponents}
-                    >
-                      {message.content}
-                    </ReactMarkdown>
-                  </div>
+                <div className="prose prose-sm dark:prose-invert max-w-none">
+                  <ReactMarkdown 
+                    remarkPlugins={[remarkGfm]}
+                    components={MarkdownComponents}
+                  >
+                    {message.content}
+                  </ReactMarkdown>
+                </div>
                   
                   {/* Add task assignment button if suggestion is found */}
                   {(() => {

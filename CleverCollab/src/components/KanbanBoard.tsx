@@ -11,11 +11,9 @@ import {
   useSensors,
 } from "@dnd-kit/core"
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable"
-import { KanbanColumn } from "./KanbanColumn"
+import KanbanColumn from "./KanbanColumn"
 import { KanbanItem } from "./KanbanItem"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { toast } from "sonner"
 import { useJira } from "@/hooks/useJira"
 import { FormattedJiraIssue } from "@/lib/jira"
@@ -47,9 +45,6 @@ export function KanbanBoard() {
   const { issues, loading, error, fetchIssues, getIssuesByStatus } = useJira()
   const [activeId, setActiveId] = useState<string | null>(null)
   const [activeTask, setActiveTask] = useState<Task | null>(null)
-  const [newTaskDialogOpen, setNewTaskDialogOpen] = useState(false)
-  const [newTaskContent, setNewTaskContent] = useState("")
-  const [currentColumnId, setCurrentColumnId] = useState<string | null>(null)
   const [columns, setColumns] = useState<Column[]>([])
 
   // Define the conversion function with useCallback to prevent unnecessary re-renders
@@ -232,23 +227,6 @@ export function KanbanBoard() {
     setActiveTask(null)
   }
 
-  const handleAddTask = (columnId: string) => {
-    setCurrentColumnId(columnId)
-    setNewTaskContent("")
-    setNewTaskDialogOpen(true)
-  }
-
-  const handleCreateTask = () => {
-    if (newTaskContent.trim() && currentColumnId) {
-      // In a real implementation, you would create a new Jira issue here
-      toast.success("New task created")
-      toast.info("Note: This is a visual change only. In a real implementation, this would create a new Jira issue.")
-
-      setNewTaskDialogOpen(false)
-      setNewTaskContent("")
-    }
-  }
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -279,35 +257,38 @@ export function KanbanBoard() {
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-full">
           {columns.map((column) => (
-            <KanbanColumn key={column.id} id={column.id} title={column.title} tasks={column.tasks} onAddTask={() => handleAddTask(column.id)} />
+            <KanbanColumn 
+              key={column.id} 
+              id={column.id} 
+              title={column.title} 
+              tasks={column.tasks} 
+              onTaskCreated={(newTask: Task) => {
+                console.log(`New task created in column ${column.id}:`, newTask);
+                
+                // Add the new task to the column and refresh the board
+                const updatedColumns = columns.map(col => {
+                  if (col.id === column.id) {
+                    return {
+                      ...col,
+                      tasks: [...col.tasks, newTask]
+                    };
+                  }
+                  return col;
+                });
+                setColumns(updatedColumns);
+                
+                // Fetch issues from Jira after a slight delay to allow for status updates
+                setTimeout(() => {
+                  console.log("Refreshing Jira issues after task creation");
+                  fetchIssues();
+                }, 2000);
+              }} 
+            />
           ))}
         </div>
 
         <DragOverlay>{activeId && activeTask ? <KanbanItem id={activeId} task={activeTask} /> : null}</DragOverlay>
       </DndContext>
-
-      <Dialog open={newTaskDialogOpen} onOpenChange={setNewTaskDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add New Task</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <Input
-              placeholder="Enter task description"
-              value={newTaskContent}
-              onChange={(e) => setNewTaskContent(e.target.value)}
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setNewTaskDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleCreateTask} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-              Create Task
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { JiraService } from '@/lib/jira';
 import fs from 'fs';
 import path from 'path';
+import axios from 'axios';
 
 // Interface for team member
 interface TeamMember {
@@ -91,6 +92,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { taskKey, assignee } = body;
 
+    console.log(`[Assign Task API] Request body:`, body);
     console.log(`[Assign Task API] Request body: taskKey=${taskKey}, assignee=${assignee}`);
 
     if (!taskKey || !assignee) {
@@ -119,33 +121,74 @@ export async function POST(request: Request) {
 
     console.log(`[Assign Task API] Attempting to assign task ${taskKey} to ${assignee}`);
     
+    // Load team members data
+    const teamMembers = await loadTeamMembers();
+    console.log(`[Assign Task API] Loaded ${teamMembers.length} team members`);
+    console.log('[Assign Task API] Available team members:', teamMembers.map(m => ({ id: m.id, name: m.name, email: m.email })));
+    
     // Determine if assignee is an ID, email, or name
     let assigneeId = assignee;
+    let assigneeType = 'unknown';
+    let assigneeDisplayName = assignee;
+    let teamMember: TeamMember | undefined;
     
-    // Check if it's a MongoDB ObjectId (24 hex characters)
-    const isMongoId = /^[0-9a-f]{24}$/i.test(assignee);
+    // Try to find the team member by ID first
+    teamMember = teamMembers.find(m => m.id === assignee);
     
-    // If it's not an ID format (no @ for email and not UUID format), try to find by name
-    if (!assignee.includes('@') && !assignee.includes(':') && !isMongoId) {
-      console.log(`[Assign Task API] Assignee "${assignee}" appears to be a name, looking up ID`);
+    if (teamMember) {
+      // Found by ID
+      assigneeType = 'id_match';
+      assigneeId = teamMember.id;
+      assigneeDisplayName = teamMember.name;
+      console.log(`[Assign Task API] Found team member by ID: ${assigneeDisplayName} (${assigneeId})`);
+    } else {
+      // Check if it's an email address
+      const isEmail = assignee.includes('@');
       
-      const teamMembers = await loadTeamMembers();
-      console.log(`[Assign Task API] Loaded ${teamMembers.length} team members`);
-      console.log('[Assign Task API] Available team members:', teamMembers.map(m => ({ id: m.id, name: m.name })));
-      
-      const teamMember = findTeamMemberByName(teamMembers, assignee);
-      
-      if (teamMember) {
-        assigneeId = teamMember.id;
-        console.log(`[Assign Task API] Found team member ID for ${assignee}: ${assigneeId}`);
+      if (isEmail) {
+        // Try to find the team member by email
+        teamMember = teamMembers.find(m => m.email.toLowerCase() === assignee.toLowerCase());
+        
+        if (teamMember) {
+          assigneeType = 'email_match';
+          assigneeId = teamMember.id; // Use the ID from team_members.json
+          assigneeDisplayName = teamMember.name;
+          console.log(`[Assign Task API] Found team member by email: ${assigneeDisplayName} (${assigneeId})`);
+        } else {
+          assigneeType = 'email_unmatched';
+          console.log(`[Assign Task API] Email not found in team members: ${assignee}`);
+        }
       } else {
-        console.warn(`[Assign Task API] Could not find team member ID for ${assignee}`);
+        // Try to find the team member by name
+        teamMember = findTeamMemberByName(teamMembers, assignee);
+        
+        if (teamMember) {
+          assigneeType = 'name_match';
+          assigneeId = teamMember.id; // Use the ID from team_members.json
+          assigneeDisplayName = teamMember.name;
+          console.log(`[Assign Task API] Found team member by name: ${assigneeDisplayName} (${assigneeId})`);
+        } else {
+          assigneeType = 'name_unmatched';
+          console.log(`[Assign Task API] Name not found in team members: ${assignee}`);
+        }
+      }
+    }
+    
+    // Log the final assignment decision
+    console.log(`[Assign Task API] Final assignee determination: [Name: ${assigneeDisplayName}] [ID: ${assigneeId}] [Type: ${assigneeType}]`);
+    
+    // Check if we couldn't find an ID
+    if (!teamMember && (assigneeType === 'name_unmatched' || assigneeType === 'email_unmatched')) {
+      console.warn(`[Assign Task API] Could not find team member ID for ${assignee}`);
+      
+      if (assigneeType === 'name_unmatched') {
         return NextResponse.json(
           {
             success: false,
             error: 'Could not find team member ID',
             details: {
               assignee,
+              assigneeType,
               availableMembers: teamMembers.map(m => m.name)
             }
           },
@@ -160,48 +203,137 @@ export async function POST(request: Request) {
           }
         );
       }
-    } else if (isMongoId) {
-      console.log(`[Assign Task API] Assignee "${assignee}" appears to be a MongoDB ID`);
-      
-      // Verify the ID exists in team_members.json
-      const teamMembers = await loadTeamMembers();
-      const teamMember = teamMembers.find(m => m.id === assignee);
-      
-      if (teamMember) {
-        console.log(`[Assign Task API] Verified team member ID ${assignee} belongs to ${teamMember.name}`);
-      } else {
-        console.warn(`[Assign Task API] Could not verify team member ID ${assignee}`);
-        // Continue anyway, as the ID might be valid in Jira even if not in our local data
-      }
-    } else if (assignee.includes('@')) {
-      console.log(`[Assign Task API] Assignee "${assignee}" appears to be an email address`);
-    } else {
-      console.log(`[Assign Task API] Assignee "${assignee}" appears to be an account ID`);
     }
 
     console.log(`[Assign Task API] Creating Jira service instance`);
     const jiraService = new JiraService();
 
     try {
-      console.log(`[Assign Task API] Calling jiraService.assignIssue(${taskKey}, ${assigneeId})`);
+      console.log(`[Assign Task API] Calling jiraService.assignIssue(${taskKey}, ${assigneeId}) [type: ${assigneeType}]`);
       await jiraService.assignIssue(taskKey, assigneeId);
-      console.log(`[Assign Task API] Successfully assigned task ${taskKey} to ${assignee} (ID: ${assigneeId})`);
+      console.log(`[Assign Task API] Successfully assigned task ${taskKey} to ${assigneeDisplayName} (ID: ${assigneeId})`);
+
+      // Verify the assignment was successful by fetching the issue
+      console.log(`[Assign Task API] Verifying assignment was successful`);
+      const issues = await jiraService.getIssues(`key = ${taskKey}`, 1);
+      
+      if (issues.length === 0) {
+        console.warn(`[Assign Task API] Could not verify assignment - issue ${taskKey} not found`);
+      } else {
+        const issue = issues[0];
+        const assigneeInfo = issue.fields.assignee;
+        
+        console.log(`[Assign Task API] Current assignee for ${taskKey}:`, assigneeInfo || 'Unassigned');
+        
+        if (!assigneeInfo) {
+          console.warn(`[Assign Task API] Assignment verification failed - issue has no assignee`);
+          
+          // Try one more time with direct approach
+          if (teamMember) {
+            try {
+              console.log(`[Assign Task API] Trying direct Jira Cloud assignment with account ID: ${teamMember.id}`);
+              
+              // Get the API base
+              const apiBase = jiraService.getApiBase();
+              const assignUrl = `${apiBase}/issue/${taskKey}/assignee`;
+              
+              console.log(`[Assign Task API] Using direct assignment URL: ${assignUrl}`);
+              
+              // Make the direct call
+              const directResponse = await axios.put(
+                assignUrl,
+                { accountId: teamMember.id },
+                {
+                  headers: jiraService.getHeaders(),
+                  auth: jiraService.getAuth()
+                }
+              );
+              
+              console.log(`[Assign Task API] Direct assignment response:`, {
+                status: directResponse.status,
+                statusText: directResponse.statusText
+              });
+              
+              if (directResponse.status === 204 || directResponse.status === 200) {
+                console.log(`[Assign Task API] Direct assignment successful!`);
+                
+                // Re-verify
+                const updatedIssues = await jiraService.getIssues(`key = ${taskKey}`, 1);
+                if (updatedIssues.length > 0 && updatedIssues[0].fields.assignee) {
+                  console.log(`[Assign Task API] Assignment verification successful after direct call!`);
+                  
+                  // Return success
+                  return NextResponse.json(
+                    {
+                      success: true,
+                      message: `Successfully assigned task ${taskKey} to ${assigneeDisplayName}`,
+                      data: {
+                        taskKey,
+                        assignee: assigneeDisplayName,
+                        assigneeId: teamMember.id,
+                        assigneeType: 'direct_assignment',
+                        verificationStatus: 'success'
+                      }
+                    },
+                    {
+                      headers: {
+                        'X-Show-Toast': JSON.stringify({
+                          type: 'success',
+                          message: `Successfully assigned task ${taskKey} to ${assigneeDisplayName}`
+                        })
+                      }
+                    }
+                  );
+                } else {
+                  console.warn(`[Assign Task API] Assignment verification failed after direct call`);
+                }
+              }
+            } catch (directError) {
+              console.error(`[Assign Task API] Error in direct assignment:`, directError);
+            }
+          }
+          
+          return NextResponse.json(
+            {
+              success: true,
+              warning: "API call succeeded but assignee doesn't appear on the issue",
+              message: `Task ${taskKey} assignment to ${assigneeDisplayName} was processed, but could not be verified`,
+              data: {
+                taskKey,
+                assignee: assigneeDisplayName,
+                assigneeId,
+                assigneeType,
+                verificationStatus: 'failed'
+              }
+            },
+            {
+              headers: {
+                'X-Show-Toast': JSON.stringify({
+                  type: 'warning',
+                  message: `Task created but assignee may not be set`
+                })
+              }
+            }
+          );
+        }
+      }
 
       return NextResponse.json(
         {
           success: true,
-          message: `Successfully assigned task ${taskKey} to ${assignee}`,
+          message: `Successfully assigned task ${taskKey} to ${assigneeDisplayName}`,
           data: {
             taskKey,
-            assignee,
-            assigneeId
+            assignee: assigneeDisplayName,
+            assigneeId,
+            assigneeType
           }
         },
         {
           headers: {
             'X-Show-Toast': JSON.stringify({
               type: 'success',
-              message: `Successfully assigned task ${taskKey} to ${assignee}`
+              message: `Successfully assigned task ${taskKey} to ${assigneeDisplayName}`
             })
           }
         }

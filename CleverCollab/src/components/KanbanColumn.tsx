@@ -6,15 +6,20 @@ import { KanbanItem } from "./KanbanItem"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import type { Task } from "./KanbanBoard"
+import { Plus } from "lucide-react"
+import { Button } from "./ui/button"
+import { useState } from "react"
+import { NewTaskModal } from "./NewTaskModal"
 
 interface KanbanColumnProps {
   id: string
   title: string
   tasks: Task[]
-  onAddTask: () => void
+  onTaskCreated?: (task: Task) => void
 }
 
-export function KanbanColumn({ id, title, tasks, onAddTask }: KanbanColumnProps) {
+export default function KanbanColumn({ id, title, tasks, onTaskCreated }: KanbanColumnProps) {
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
   const { setNodeRef } = useDroppable({
     id: `column-${id}`,
   })
@@ -38,6 +43,14 @@ export function KanbanColumn({ id, title, tasks, onAddTask }: KanbanColumnProps)
       <CardHeader className={`pb-2 sticky top-0 z-10`}>
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg">{title}</CardTitle>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => setIsTaskModalOpen(true)}
+          >
+            <Plus className="h-5 w-5" />
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="flex-1 p-0">
@@ -57,6 +70,23 @@ export function KanbanColumn({ id, title, tasks, onAddTask }: KanbanColumnProps)
           </div>
         </ScrollArea>
       </CardContent>
+      <NewTaskModal 
+        isOpen={isTaskModalOpen} 
+        onClose={() => setIsTaskModalOpen(false)} 
+        initialColumnId={id}
+        onTaskCreated={(taskKey) => {
+          console.log(`Task ${taskKey} created in column ${id}`);
+          if (onTaskCreated) {
+            // Create a task object with all required properties from the Task type
+            onTaskCreated({
+              id: taskKey,
+              content: taskKey,
+              key: taskKey,
+              status: id
+            });
+          }
+        }}
+      />
     </Card>
   )
 }

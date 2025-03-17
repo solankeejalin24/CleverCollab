@@ -73,6 +73,19 @@ export class JiraService {
     });
   }
 
+  // Helper methods for debugging and testing
+  getApiBase(): string {
+    return this.baseUrl.replace(/\/search$/, '');
+  }
+
+  getHeaders(): any {
+    return { ...this.headers };
+  }
+
+  getAuth(): any {
+    return { ...this.auth };
+  }
+
   async getIssues(jql: string, maxResults: number = 1000): Promise<JiraIssue[]> {
     try {
       let startAt = 0;
@@ -354,8 +367,23 @@ export class JiraService {
     try {
       console.log(`[JiraService] Assigning issue ${issueKey} to ${assigneeIdOrEmail}`);
       
-      // Determine if the input is an email or an account ID
+      // Check if it's a Jira Cloud account ID (looks like 712020:f15989c0-31c3-4d67-9f58-4195acb97ddc)
+      const isJiraCloudId = /^\d+:[a-f0-9-]+$/i.test(assigneeIdOrEmail);
+      // Check if it's a MongoDB ObjectId (24 hex characters)
+      const isMongoId = /^[0-9a-f]{24}$/i.test(assigneeIdOrEmail);
+      // Determine if the input is an email
       const isEmail = assigneeIdOrEmail.includes('@');
+      
+      // Log the detected format
+      if (isJiraCloudId) {
+        console.log(`[JiraService] Detected Jira Cloud account ID format`);
+      } else if (isMongoId) {
+        console.log(`[JiraService] Detected MongoDB ID format`);
+      } else if (isEmail) {
+        console.log(`[JiraService] Detected email format`);
+      } else {
+        console.log(`[JiraService] Unknown ID format, will try multiple formats`);
+      }
       
       // Construct the base URL without /search if present
       const apiBase = this.baseUrl.replace(/\/search$/, '');
@@ -363,41 +391,371 @@ export class JiraService {
       
       console.log(`[JiraService] Using URL: ${url}`);
       
-      // Prepare the request body based on whether we have an email or account ID
-      const requestBody = isEmail 
-        ? { emailAddress: assigneeIdOrEmail } 
-        : { accountId: assigneeIdOrEmail };
+      // Jira Cloud requires a specific format for the accountId parameter
+      if (isJiraCloudId) {
+        try {
+          // For Jira Cloud, accountId is the preferred format
+          console.log(`[JiraService] Using Jira Cloud accountId format`);
+          
+          const response = await axios.put(url, { accountId: assigneeIdOrEmail }, {
+            headers: this.headers,
+            auth: this.auth
+          });
+          
+          if (response.status === 204 || response.status === 200) {
+            console.log(`[JiraService] Successfully assigned issue using Jira Cloud format`);
+            return;
+          }
+        } catch (error: any) {
+          console.error(`[JiraService] Error with Jira Cloud format:`, error.message);
+          // Continue to try other formats
+        }
+      }
       
-      console.log(`[JiraService] Request body: ${JSON.stringify(requestBody)}`);
-      console.log(`[JiraService] Headers:`, this.headers);
-      console.log(`[JiraService] Auth:`, { username: this.auth.username, password: '***' });
+      // Try each format in sequence, starting with the most appropriate based on the ID type
+      let formats = [];
       
+      if (isEmail) {
+        // If it's an email, prioritize email formats
+        formats = [
+          { emailAddress: assigneeIdOrEmail },
+          { accountId: assigneeIdOrEmail },
+          { name: assigneeIdOrEmail },
+          { value: assigneeIdOrEmail },
+          assigneeIdOrEmail
+        ];
+      } else if (isMongoId) {
+        // If it's a MongoDB ID, prioritize ID formats
+        formats = [
+          { accountId: assigneeIdOrEmail },
+          { id: assigneeIdOrEmail },
+          { key: assigneeIdOrEmail },
+          { name: assigneeIdOrEmail },
+          assigneeIdOrEmail
+        ];
+      } else {
+        // General formats to try
+        formats = [
+          { accountId: assigneeIdOrEmail },
+          { name: assigneeIdOrEmail },
+          { key: assigneeIdOrEmail },
+          { id: assigneeIdOrEmail },
+          assigneeIdOrEmail,
+          { value: assigneeIdOrEmail },
+          { "account-id": assigneeIdOrEmail },
+          { value: { accountId: assigneeIdOrEmail } }
+        ];
+      }
+      
+      // Try an extra format for Jira Cloud when using an email
+      if (isEmail) {
+        console.log(`[JiraService] Searching for user by email: ${assigneeIdOrEmail}`);
+        // First try to find the user by email to get their account ID
+        try {
+          const userSearchUrl = `${apiBase}/user/search?query=${encodeURIComponent(assigneeIdOrEmail)}`;
+          const userResponse = await axios.get(userSearchUrl, {
+            headers: this.headers,
+            auth: this.auth
+          });
+          
+          if (userResponse.data && userResponse.data.length > 0) {
+            const foundUser = userResponse.data[0];
+            console.log(`[JiraService] Found user:`, foundUser);
+            
+            if (foundUser.accountId) {
+              console.log(`[JiraService] Using found accountId: ${foundUser.accountId}`);
+              
+              // Try with the found accountId
+              const assignResponse = await axios.put(url, { accountId: foundUser.accountId }, {
+                headers: this.headers,
+                auth: this.auth
+              });
+              
+              if (assignResponse.status === 204 || assignResponse.status === 200) {
+                console.log(`[JiraService] Successfully assigned issue using found accountId`);
+                return;
+              }
+            }
+          }
+        } catch (error: any) {
+          console.error(`[JiraService] Error finding user by email:`, error.message);
+          // Continue to try other formats
+        }
+      }
+      
+      // Log what formats we'll be trying
+      console.log(`[JiraService] Will try ${formats.length} different assignee formats`);
+      
+      let lastError = null;
+      
+      // Try each format
+      for (const format of formats) {
+        try {
+          console.log(`[JiraService] Trying assignee format:`, format);
+          
+          const response = await axios.put(url, format, {
+            headers: this.headers,
+            auth: this.auth
+          });
+          
+          // Check if the response is successful (204 No Content or 200 OK)
+          if (response.status === 204 || response.status === 200) {
+            console.log(`[JiraService] Successfully assigned issue ${issueKey} using format:`, format);
+            console.log(`[JiraService] Response status: ${response.status}`);
+            return;
+          }
+          
+          console.log(`[JiraService] Unexpected response status: ${response.status} ${response.statusText}`);
+        } catch (axiosError: any) {
+          console.log(`[JiraService] Failed with assignee format:`, format);
+          if (axiosError.response) {
+            console.error(`[JiraService] Response status: ${axiosError.response.status}`);
+            console.error(`[JiraService] Response data:`, axiosError.response.data);
+          } else {
+            console.error(`[JiraService] Error without response:`, axiosError.message);
+          }
+          lastError = axiosError;
+        }
+      }
+      
+      // Try with an empty assignee to clear the field (sometimes helps diagnose issues)
       try {
-        const response = await axios.put(url, requestBody, {
+        console.log(`[JiraService] Trying to clear assignee as a test`);
+        const response = await axios.put(url, null, {
           headers: this.headers,
           auth: this.auth
         });
         
-        // Check if the response is successful (204 No Content or 200 OK)
-        if (response.status !== 204 && response.status !== 200) {
-          console.error(`[JiraService] Failed to assign issue: ${response.status} ${response.statusText}`);
-          throw new Error(`Failed to assign issue: ${response.status} ${response.statusText}`);
+        if (response.status === 204 || response.status === 200) {
+          console.log(`[JiraService] Successfully cleared assignee, now trying to set it again`);
+          
+          // If clearing worked, try setting again with accountId format
+          const assignResponse = await axios.put(url, { accountId: assigneeIdOrEmail }, {
+            headers: this.headers,
+            auth: this.auth
+          });
+          
+          if (assignResponse.status === 204 || assignResponse.status === 200) {
+            console.log(`[JiraService] Successfully assigned issue after clearing`);
+            return;
+          }
         }
-        
-        console.log(`[JiraService] Successfully assigned issue ${issueKey} to ${assigneeIdOrEmail}`);
-        console.log(`[JiraService] Response status: ${response.status}`);
-        return;
-      } catch (axiosError: any) {
-        console.error(`[JiraService] Axios error:`, axiosError);
-        if (axiosError.response) {
-          console.error(`[JiraService] Response status: ${axiosError.response.status}`);
-          console.error(`[JiraService] Response data:`, axiosError.response.data);
-        }
-        throw axiosError;
+      } catch (error: any) {
+        console.error(`[JiraService] Error clearing assignee:`, error.message);
       }
+      
+      // If we get here, all formats failed
+      console.error(`[JiraService] All assignee formats failed for ${issueKey} to ${assigneeIdOrEmail}`);
+      console.error(`[JiraService] Last error:`, lastError);
+      throw new Error(`Failed to assign issue: All formats failed. Last error: ${lastError?.message || 'Unknown error'}`);
     } catch (error: any) {
       console.error(`[JiraService] Error assigning issue ${issueKey} to ${assigneeIdOrEmail}:`, error);
       throw new Error(`Failed to assign issue: ${error.message}`);
+    }
+  }
+
+  // Method to create a new issue
+  async createIssue(issueData: {
+    summary: string;
+    description: string;
+    issueType: string;
+    projectKey: string;
+    startDate?: string;
+    dueDate?: string;
+    assignee?: string;
+    estimatedHours?: number;
+  }): Promise<any> {
+    try {
+      console.log(`[JiraService] Creating issue with data:`, issueData);
+      
+      const apiBase = this.baseUrl.replace(/\/search$/, '');
+      const url = `${apiBase}/issue`;
+      
+      console.log(`[JiraService] Using URL: ${url}`);
+      
+      // Check if we're using API v3 (which requires different description format)
+      const isApiV3 = this.baseUrl.includes('/rest/api/3/');
+      
+      // Prepare request body
+      const requestBody: any = {
+        fields: {
+          summary: issueData.summary,
+          issuetype: {
+            name: issueData.issueType
+          },
+          project: {
+            key: issueData.projectKey
+          }
+        }
+      };
+      
+      // Format description based on API version
+      if (isApiV3) {
+        // API v3 uses Atlassian Document Format
+        requestBody.fields.description = {
+          type: "doc",
+          version: 1,
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: issueData.description
+                }
+              ]
+            }
+          ]
+        };
+      } else {
+        // API v2 uses plain text
+        requestBody.fields.description = issueData.description;
+      }
+      
+      // Add optional start date
+      if (issueData.startDate) {
+        console.log(`[JiraService] Setting start date: ${issueData.startDate}`);
+        requestBody.fields.customfield_10015 = issueData.startDate;
+      }
+      
+      // Add optional due date
+      if (issueData.dueDate) {
+        console.log(`[JiraService] Setting due date: ${issueData.dueDate}`);
+        requestBody.fields.duedate = issueData.dueDate;
+      }
+      
+      // Add optional estimated hours
+      if (issueData.estimatedHours !== undefined) {
+        let estimatedHoursValue = issueData.estimatedHours;
+        
+        // Convert to number if it's a string
+        if (typeof estimatedHoursValue === 'string') {
+          estimatedHoursValue = parseFloat(estimatedHoursValue);
+          console.log(`[JiraService] Parsed estimatedHours from string to number: ${estimatedHoursValue}`);
+        }
+        
+        if (!isNaN(estimatedHoursValue)) {
+          console.log(`[JiraService] Setting estimated hours: ${estimatedHoursValue}`);
+          requestBody.fields.customfield_10040 = estimatedHoursValue;
+        } else {
+          console.warn(`[JiraService] Invalid estimated hours value: ${issueData.estimatedHours}, not setting field`);
+        }
+      }
+      
+      console.log(`[JiraService] Request body:`, JSON.stringify(requestBody, null, 2));
+      
+      try {
+        // Simple, direct request without assignee
+        const response = await axios.post(url, requestBody, {
+          headers: this.headers,
+          auth: this.auth
+        });
+        
+        console.log(`[JiraService] Successfully created issue:`, response.data);
+        
+        // If we have assignee data, try to assign the issue in a separate request
+        if (issueData.assignee && response.data && response.data.key) {
+          const issueKey = response.data.key;
+          try {
+            console.log(`[JiraService] Attempting to assign issue ${issueKey} to ${issueData.assignee}`);
+            await this.assignIssue(issueKey, issueData.assignee);
+            console.log(`[JiraService] Successfully assigned issue ${issueKey} to ${issueData.assignee}`);
+          } catch (assignError) {
+            console.error(`[JiraService] Failed to assign issue ${issueKey}:`, assignError);
+            // Continue with the unassigned issue
+          }
+        }
+        
+        return response.data;
+      } catch (error: any) {
+        console.error(`[JiraService] Error creating issue:`, error.message);
+        
+        if (error.response) {
+          console.error(`[JiraService] Response status: ${error.response.status}`);
+          console.error(`[JiraService] Response data:`, error.response.data);
+          
+          // Check for specific error cases and try to fix
+          if (error.response.status === 400) {
+            const errorData = error.response.data;
+            
+            // Try to identify the specific error and fix it
+            if (errorData.errors) {
+              console.log(`[JiraService] Validation errors:`, errorData.errors);
+              
+              // If description format is the issue, try the opposite format
+              if (errorData.errors.description) {
+                console.log(`[JiraService] Description format error, trying alternate format`);
+                
+                // Toggle the description format
+                if (isApiV3) {
+                  // If we tried ADF, try plain text
+                  requestBody.fields.description = issueData.description;
+                } else {
+                  // If we tried plain text, try ADF
+                  requestBody.fields.description = {
+                    type: "doc",
+                    version: 1,
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [
+                          {
+                            type: "text",
+                            text: issueData.description
+                          }
+                        ]
+                      }
+                    ]
+                  };
+                }
+                
+                console.log(`[JiraService] Retrying with alternate description format:`, requestBody.fields.description);
+                
+                // Try again
+                try {
+                  const retryResponse = await axios.post(url, requestBody, {
+                    headers: this.headers,
+                    auth: this.auth
+                  });
+                  
+                  console.log(`[JiraService] Successfully created issue with alternate description format:`, retryResponse.data);
+                  return retryResponse.data;
+                } catch (retryError: any) {
+                  console.error(`[JiraService] Retry also failed:`, retryError.message);
+                  throw retryError;
+                }
+              }
+              
+              // If estimated hours is the issue, remove it and retry
+              if (errorData.errors.customfield_10040) {
+                console.log(`[JiraService] Estimated hours format error, removing field and retrying`);
+                
+                // Remove the problematic field
+                delete requestBody.fields.customfield_10040;
+                
+                // Try again
+                try {
+                  const retryResponse = await axios.post(url, requestBody, {
+                    headers: this.headers,
+                    auth: this.auth
+                  });
+                  
+                  console.log(`[JiraService] Successfully created issue without estimated hours:`, retryResponse.data);
+                  return retryResponse.data;
+                } catch (retryError: any) {
+                  console.error(`[JiraService] Retry also failed:`, retryError.message);
+                  throw retryError;
+                }
+              }
+            }
+          }
+        }
+        
+        throw error;
+      }
+    } catch (error: any) {
+      console.error(`[JiraService] Error creating issue:`, error);
+      throw new Error(`Failed to create issue: ${error.message}`);
     }
   }
 } 

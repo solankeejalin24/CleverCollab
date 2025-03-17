@@ -16,6 +16,56 @@ import { CalendarIcon, CheckCircle2, CircleDashed, Loader2, ClockIcon, LinkIcon,
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
+// Function to prioritize tasks based on skills, deadlines, and estimated hours
+const prioritizeTasks = (tasks: any[]) => {
+  if (!tasks || tasks.length === 0) return [];
+  
+  return [...tasks].sort((a, b) => {
+    // First priority: Status category - done tasks should be at the bottom
+    if (a.statusCategory === "done" && b.statusCategory !== "done") return 1;
+    if (a.statusCategory !== "done" && b.statusCategory === "done") return -1;
+    
+    // For tasks with the same completion status, prioritize by:
+    
+    // 1. Due date - tasks with closer due dates get higher priority
+    if (a.dueDate && b.dueDate) {
+      const dateA = new Date(a.dueDate);
+      const dateB = new Date(b.dueDate);
+      if (dateA < dateB) return -1;
+      if (dateA > dateB) return 1;
+    } else if (a.dueDate) {
+      return -1; // Task with due date comes first
+    } else if (b.dueDate) {
+      return 1;
+    }
+    
+    // 2. Status category - in-progress tasks get priority over todo tasks
+    if (a.statusCategory !== b.statusCategory) {
+      if (a.statusCategory === "in-progress") return -1;
+      if (b.statusCategory === "in-progress") return 1;
+    }
+    
+    // 3. Estimated hours - shorter tasks get priority (quick wins)
+    if (a.estimatedHours && b.estimatedHours) {
+      return a.estimatedHours - b.estimatedHours;
+    } else if (a.estimatedHours) {
+      return -1; // Task with estimate comes first
+    } else if (b.estimatedHours) {
+      return 1;
+    }
+    
+    // 4. Issue type - bugs get priority over tasks, tasks over stories
+    if (a.issueType !== b.issueType) {
+      if (a.issueType.toLowerCase().includes("bug")) return -1;
+      if (b.issueType.toLowerCase().includes("bug")) return 1;
+      if (a.issueType.toLowerCase().includes("task")) return -1;
+      if (b.issueType.toLowerCase().includes("task")) return 1;
+    }
+    
+    return 0;
+  });
+};
+
 export default function Home() {
   const { openChatbot } = useChatbot()
   const { openSkillsModal } = useSkills()
@@ -42,7 +92,10 @@ export default function Home() {
         fullUser: user,
       })
 
-      setMyIssues(getMyIssues(userEmail, userName))
+      // Get user's issues and prioritize them
+      const userIssues = getMyIssues(userEmail, userName);
+      const prioritizedIssues = prioritizeTasks(userIssues);
+      setMyIssues(prioritizedIssues);
     }
   }, [issues, user])
 
@@ -94,8 +147,8 @@ export default function Home() {
             <div className="w-full max-w-4xl mb-12">
               <Card className="bg-card border shadow-sm overflow-hidden">
                 <CardHeader className="bg-background sticky top-0 z-10">
-                  <CardTitle className="text-xl">My Tasks</CardTitle>
-                  <CardDescription>Your assigned Jira issues</CardDescription>
+                  <CardTitle className="text-xl">My Tasks ✨</CardTitle>
+                  <CardDescription>Your assigned tasks, intelligently prioritized</CardDescription>
                 </CardHeader>
                 {loading ? (
                   <CardContent className="flex items-center justify-center py-10">
@@ -187,7 +240,7 @@ export default function Home() {
           </SignedOut>
 
           <p className="text-xl text-muted-foreground mb-10 max-w-md text-center">
-            A powerful collaboration tool with AI assistance to boost your productivity
+            Autonomous AI agent for intelligent project management, data retrieval, and real-time collaboration
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mb-8">
