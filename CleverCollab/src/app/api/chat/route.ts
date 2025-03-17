@@ -20,6 +20,130 @@ interface Skill {
   teamMemberName?: string;
 }
 
+// Helper interface for team member workload
+interface TeamMemberWorkload {
+  name: string;
+  email: string;
+  totalTasks: number;
+  estimatedHoursRemaining: number;
+  skills: string[];
+  upcomingDeadlines: {
+    taskKey: string;
+    dueDate: string;
+  }[];
+}
+
+// Function to calculate team member workloads
+function calculateTeamWorkloads(
+  allIssues: FormattedJiraIssue[],
+  skills: Skill[]
+): Map<string, TeamMemberWorkload> {
+  const workloads = new Map<string, TeamMemberWorkload>();
+  const emailToName = new Map<string, string>();
+  const nameToEmail = new Map<string, string>();
+
+  // First, build complete mapping of names and emails
+  allIssues.forEach(issue => {
+    if (issue.assignee && issue.assigneeEmail) {
+      const normalizedName = issue.assignee.toLowerCase();
+      const normalizedEmail = issue.assigneeEmail.toLowerCase();
+      emailToName.set(normalizedEmail, issue.assignee);
+      nameToEmail.set(normalizedName, issue.assigneeEmail);
+    }
+  });
+
+  // Initialize workloads for all team members from skills data
+  const uniqueTeamMembers = new Set<string>();
+  skills.forEach(skill => {
+    if (skill.teamMemberName) {
+      uniqueTeamMembers.add(skill.teamMemberName);
+    }
+  });
+
+  // Initialize workload entries for all team members from skills
+  uniqueTeamMembers.forEach(teamMember => {
+    const teamMemberSkills = skills
+      .filter(skill => skill.teamMemberName === teamMember)
+      .map(skill => `${skill.name} (${skill.category})`);
+
+    const normalizedName = teamMember.toLowerCase();
+    const email = nameToEmail.get(normalizedName) || '';
+    
+    workloads.set(normalizedName, {
+      name: teamMember,
+      email: email,
+      totalTasks: 0,
+      estimatedHoursRemaining: 0,
+      skills: teamMemberSkills,
+      upcomingDeadlines: []
+    });
+  });
+
+  // Create a reverse mapping for any assignees not in skills data
+  allIssues.forEach(issue => {
+    if (issue.assignee && !workloads.has(issue.assignee.toLowerCase())) {
+      const normalizedName = issue.assignee.toLowerCase();
+      workloads.set(normalizedName, {
+        name: issue.assignee,
+        email: issue.assigneeEmail || '',
+        totalTasks: 0,
+        estimatedHoursRemaining: 0,
+        skills: [],
+        upcomingDeadlines: []
+      });
+    }
+  });
+
+  // Process all issues to update workloads
+  allIssues.forEach(issue => {
+    if (!issue.assignee) return;
+
+    const normalizedName = issue.assignee.toLowerCase();
+    const workload = workloads.get(normalizedName);
+    
+    if (workload) {
+      // Update workload metrics
+      workload.totalTasks++;
+      if (typeof issue.estimatedHours === 'number') {
+        workload.estimatedHoursRemaining += issue.estimatedHours;
+      }
+
+      if (issue.dueDate) {
+        workload.upcomingDeadlines.push({
+          taskKey: issue.key,
+          dueDate: issue.dueDate
+        });
+      }
+    }
+  });
+
+  return workloads;
+}
+
+// Function to find task by key
+function findTaskByKey(allIssues: FormattedJiraIssue[], taskKey: string): FormattedJiraIssue | undefined {
+  return allIssues.find(issue => issue.key.toLowerCase() === taskKey.toLowerCase());
+}
+
+// Function to format workload information
+function formatWorkloadSummary(workloads: Map<string, TeamMemberWorkload>): string {
+  return Array.from(workloads.entries())
+    .map(([_, workload]) => {
+      // Sort deadlines by date
+      const sortedDeadlines = [...workload.upcomingDeadlines].sort(
+        (a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+      );
+
+      return `
+### ${workload.name}
+- Total Tasks: ${workload.totalTasks}
+- Total Estimated Hours Remaining: ${workload.estimatedHoursRemaining.toFixed(1)}
+- Skills: ${workload.skills.join(', ') || 'No skills recorded'}
+- Upcoming Deadlines: ${sortedDeadlines.map(d => `${d.taskKey} (Due: ${d.dueDate})`).join(', ') || 'None'}`;
+    })
+    .join('\n');
+}
+
 // Function to load skills data
 async function loadSkills(): Promise<Skill[]> {
   try {
@@ -148,17 +272,29 @@ export async function POST(req: Request) {
     const hasSystemMessage = messages.some((msg: { role: string }) => msg.role === 'system');
     
     if (!hasSystemMessage) {
-      // Format user's tasks
-      const userTasksFormatted = userIssues.map(issue => 
-        `${issue.key}: ${issue.summary} (Status: ${issue.status}, Due: ${issue.dueDate || 'Not set'})`
-      ).join('\n');
+      // Calculate team workloads
+      const teamWorkloads = calculateTeamWorkloads(allIssues, skills);
       
-      // Calculate workload summary
+      // Format workload information for the system message
+      const workloadInformation = formatWorkloadSummary(teamWorkloads);
+
+      // Get unassigned tasks
+      const unassignedTasks = allIssues.filter(issue => !issue.assignee);
+      const unassignedTasksFormatted = unassignedTasks.map(issue =>
+        `${issue.key}: ${issue.summary} (Type: ${issue.issueType}, Status: ${issue.status}${issue.dueDate ? `, Due: ${issue.dueDate}` : ''})${issue.estimatedHours ? `, Est. Hours: ${issue.estimatedHours}` : ''}`
+      ).join('\n');
+
+      // Format user's tasks with workload summary
+      const userTasksFormatted = userIssues.map(issue => 
+        `${issue.key}: ${issue.summary} (Status: ${issue.status}, Due: ${issue.dueDate || 'Not set'})${issue.estimatedHours ? `, Est. Hours: ${issue.estimatedHours}` : ''}`
+      ).join('\n');
+
+      // Calculate user workload summary
       const totalUserTasks = userIssues.length;
       const totalEstimatedHours = userIssues.reduce((total, issue) => 
         total + (issue.estimatedHours || 0), 0
       );
-      
+
       const workloadSummary = `
 WORKLOAD SUMMARY:
 - Total Assigned Tasks: ${totalUserTasks}
@@ -195,6 +331,13 @@ When answering questions:
 3. Be specific about task assignments, priorities, and potential issues
 4. Consider both skills and current workload when making recommendations
 
+For task assignment recommendations:
+1. Consider team member skills and expertise
+2. Evaluate current workload and estimated hours
+3. Check upcoming deadlines and time constraints
+4. Balance workload across the team
+5. Consider task requirements and complexity
+
 FORMATTING INSTRUCTIONS:
 - Use proper markdown formatting in your responses
 - Use headings (### for main sections, #### for subsections)
@@ -208,6 +351,12 @@ Current date: ${new Date().toLocaleDateString()}
 
 ${workloadSummary}
 
+TEAM WORKLOAD OVERVIEW:
+${workloadInformation}
+
+UNASSIGNED TASKS:
+${unassignedTasksFormatted || 'No unassigned tasks'}
+
 USER'S TASKS:
 ${userTasksFormatted || 'No tasks assigned'}
 
@@ -220,7 +369,14 @@ ${teamSkillsFormatted || 'No team skills recorded'}
 PROJECT TASKS BY ASSIGNEE:
 ${tasksByAssignee}
 
-You have access to this data to help answer questions about task assignments, prioritization, workload management, and identifying project bottlenecks.`
+You have access to this data to help answer questions about task assignments, prioritization, workload management, and identifying project bottlenecks.
+
+When asked about task assignments:
+1. First check if the task exists in the unassigned tasks list
+2. Analyze the task requirements and estimated hours
+3. Compare with team members' skills and current workload
+4. Consider upcoming deadlines and time constraints
+5. Provide a clear recommendation with reasoning`
       });
     }
     
