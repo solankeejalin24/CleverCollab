@@ -103,5 +103,40 @@
     "teamMemberId": "61539e9d9cdb93007221a33c",
     "teamMemberName": "Daksh Prajapati",
     "id": "1741493431643"
+  },
+  {
+    "name": "React",
+    "category": "Framework",
+    "teamMemberId": "61539e9d9cdb93007221a33c",
+    "teamMemberName": "Daksh Prajapati",
+    "id": "1742179441981"
+  },
+  {
+    "name": "TypeScript",
+    "category": "Programming Language",
+    "teamMemberId": "61539e9d9cdb93007221a33c",
+    "teamMemberName": "Daksh Prajapati",
+    "id": "1742179445719"
+  },
+  {
+    "name": "Python",
+    "category": "Programming Language",
+    "teamMemberId": "61539e9d9cdb93007221a33c",
+    "teamMemberName": "Daksh Prajapati",
+    "id": "1742179448689"
+  },
+  {
+    "name": "AWS",
+    "category": "Cloud",
+    "teamMemberId": "61539e9d9cdb93007221a33c",
+    "teamMemberName": "Daksh Prajapati",
+    "id": "1742179453296"
+  },
+  {
+    "name": "Google Cloud",
+    "category": "Cloud",
+    "teamMemberId": "61539e9d9cdb93007221a33c",
+    "teamMemberName": "Daksh Prajapati",
+    "id": "1742179459030"
   }
 ]

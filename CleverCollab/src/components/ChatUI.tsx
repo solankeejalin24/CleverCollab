@@ -13,6 +13,7 @@ import { useJira } from "@/hooks/useJira"
 import { FormattedJiraIssue } from "@/lib/jira"
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { toast } from "sonner"
 
 // Custom components for markdown rendering
 const MarkdownComponents = {
@@ -36,12 +37,200 @@ const MarkdownComponents = {
   td: ({ node, ...props }: any) => <td className="border border-gray-300 dark:border-gray-600 p-2" {...props} />,
 };
 
+// Component for task assignment button
+function TaskAssignmentButton({ taskKey, assignee, onAssign }: { 
+  taskKey: string; 
+  assignee: string; 
+  onAssign: (taskKey: string, assignee: string) => void;
+}) {
+  return (
+    <div className="mt-3 p-3 border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-800">
+      <div className="flex flex-col gap-2">
+        <div className="text-sm font-medium">Assign Task</div>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="text-xs text-gray-500 dark:text-gray-400">Task Key:</div>
+          <div className="text-xs font-medium">{taskKey}</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">Assignee:</div>
+          <div className="text-xs font-medium">{assignee}</div>
+        </div>
+        <button 
+          onClick={() => onAssign(taskKey, assignee)}
+          className="mt-2 w-full bg-primary text-primary-foreground hover:bg-primary/90 py-1 px-3 rounded-md text-sm font-medium"
+        >
+          Confirm Assignment
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function ChatUI({ className }: { className?: string }) {
   const { isOpen } = useChatbot();
   const { user } = useUser();
   const userEmail = user?.emailAddresses?.[0]?.emailAddress;
   const userName = user?.firstName || user?.lastName || user?.username;
   const { currentUserIssues, issues, fetchIssues } = useJira();
+  
+  // Function to directly assign a task
+  const assignTask = useCallback(async (taskKey: string, assignee: string) => {
+    if (!taskKey || !assignee) {
+      console.error('[ChatUI] Missing taskKey or assignee for assignment');
+      toast.error('Cannot assign task: Missing task key or assignee');
+      return;
+    }
+    
+    console.log(`[ChatUI] Directly assigning task ${taskKey} to ${assignee}`);
+    
+    try {
+      // Validate task key format
+      if (!/^[A-Za-z0-9]+-[0-9]+$/.test(taskKey)) {
+        console.error(`[ChatUI] Invalid task key format: ${taskKey}`);
+        toast.error(`Invalid task key format: ${taskKey}`);
+        return { success: false, error: 'Invalid task key format' };
+      }
+      
+      // Check if the task exists in our local issues list
+      const taskExists = issues.some(issue => issue.key.toLowerCase() === taskKey.toLowerCase());
+      if (!taskExists) {
+        console.warn(`[ChatUI] Task ${taskKey} not found in local issues list. Proceeding anyway.`);
+      }
+      
+      // Find the exact team member by name in our issues list
+      let assigneeId = assignee;
+      
+      // Check if assignee is a name (not an email or ID)
+      const isEmail = assignee.includes('@');
+      const isAccountId = assignee.includes(':') || /^[0-9a-f]{24}$/i.test(assignee);
+      
+      if (isAccountId) {
+        console.log(`[ChatUI] Assignee "${assignee}" appears to be an account ID, using as is`);
+        // Use the ID directly
+      } else if (isEmail) {
+        console.log(`[ChatUI] Assignee "${assignee}" appears to be an email, using as is`);
+        // Use the email directly
+      } else {
+        console.log(`[ChatUI] Assignee "${assignee}" appears to be a name, looking for matching team member`);
+        
+        // Try to find a matching team member in our issues list
+        const matchingIssue = issues.find(issue => 
+          issue.assignee && issue.assignee.toLowerCase() === assignee.toLowerCase()
+        );
+        
+        if (matchingIssue && matchingIssue.assigneeAccountId) {
+          console.log(`[ChatUI] Found exact matching team member with account ID: ${matchingIssue.assigneeAccountId}`);
+          assigneeId = matchingIssue.assigneeAccountId;
+        } else {
+          // Try partial match
+          const partialMatchIssue = issues.find(issue => 
+            issue.assignee && issue.assignee.toLowerCase().includes(assignee.toLowerCase())
+          );
+          
+          if (partialMatchIssue && partialMatchIssue.assigneeAccountId) {
+            console.log(`[ChatUI] Found partial matching team member with account ID: ${partialMatchIssue.assigneeAccountId}`);
+            assigneeId = partialMatchIssue.assigneeAccountId;
+          } else if (partialMatchIssue && partialMatchIssue.assigneeEmail) {
+            console.log(`[ChatUI] Found partial matching team member with email: ${partialMatchIssue.assigneeEmail}`);
+            assigneeId = partialMatchIssue.assigneeEmail;
+          } else {
+            console.log(`[ChatUI] No matching team member found in issues list, proceeding with name`);
+            // The API will handle name lookup using team_members.json
+          }
+        }
+      }
+      
+      console.log(`[ChatUI] Final assignee value for API call: ${assigneeId}`);
+      
+      // Make a direct API call to assign the task
+      const response = await fetch('/api/jira/assign-task', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ taskKey, assignee: assigneeId }),
+      });
+      
+      // Handle non-OK responses
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorMessage = `Failed to assign task (${response.status})`;
+        
+        try {
+          // Try to parse the error response as JSON
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch (e) {
+          // If parsing fails, use the raw text if it's not too long
+          if (errorText && errorText.length < 100) {
+            errorMessage = errorText;
+          }
+        }
+        
+        console.error(`[ChatUI] Assignment API error (${response.status}):`, errorText);
+        
+        // Provide more helpful error messages based on status code
+        if (response.status === 404) {
+          toast.error(`Task ${taskKey} not found or user ${assignee} not found in Jira`);
+        } else if (response.status === 401 || response.status === 403) {
+          toast.error('Not authorized to assign this task');
+        } else {
+          toast.error(errorMessage);
+        }
+        
+        return { success: false, error: errorMessage };
+      }
+      
+      const data = await response.json();
+      console.log('[ChatUI] Assignment API response:', data);
+      
+      // Check for toast notification in headers
+      const showToast = response.headers.get('X-Show-Toast');
+      if (showToast) {
+        try {
+          const toastData = JSON.parse(showToast);
+          const toastType = (toastData.type || 'info') as 'success' | 'error' | 'info' | 'warning';
+          
+          console.log("[ChatUI] Displaying toast:", { type: toastType, message: toastData.message });
+          
+          // Use the appropriate toast function based on type
+          switch (toastType) {
+            case 'success':
+              toast.success(toastData.message || 'Task assignment processed');
+              break;
+            case 'error':
+              toast.error(toastData.message || 'Task assignment failed');
+              break;
+            case 'warning':
+              toast.warning(toastData.message || 'Task assignment warning');
+              break;
+            default:
+              toast.info(toastData.message || 'Task assignment processed');
+          }
+        } catch (error) {
+          console.error('[ChatUI] Error parsing toast data:', error);
+          
+          if (data.success) {
+            toast.success(`Successfully assigned task ${taskKey} to ${assignee}`);
+          } else {
+            toast.error(`Failed to assign task: ${data.error || 'Unknown error'}`);
+          }
+        }
+      } else {
+        // Fallback toast based on response data
+        if (data.success) {
+          toast.success(`Successfully assigned task ${taskKey} to ${assignee}`);
+        } else {
+          toast.error(`Failed to assign task: ${data.error || 'Unknown error'}`);
+        }
+      }
+      
+      return data;
+    } catch (error: any) {
+      console.error('[ChatUI] Error assigning task:', error);
+      const errorMessage = error.message || 'Unknown error occurred';
+      toast.error(`Failed to assign task: ${errorMessage}`);
+      return { success: false, error: errorMessage };
+    }
+  }, [issues]);
   
   // Fetch issues when the component mounts
   useEffect(() => {
@@ -143,62 +332,164 @@ Current date: ${new Date().toLocaleDateString()}`;
     ])
   }
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (input.trim() && !isLoading) {
-      console.log("Submitting message:", input);
-      handleSubmit(e)
-    }
-  }
-
-  // Add debugging logs for messages
-  useEffect(() => {
-    console.log("Current messages:", messages);
-  }, [messages]);
-
-  // Add debugging logs for loading state
-  useEffect(() => {
-    console.log("Loading state:", isLoading);
-  }, [isLoading]);
-
-  // Display error message if there's an error
-  useEffect(() => {
-    if (error) {
-      console.error("Chat error detected:", error);
-    }
-  }, [error]);
-
-  const getMyIssues = useCallback((userEmail?: string, userName?: string): FormattedJiraIssue[] => {
-    if (!userEmail && !userName) return [];
+  // Function to extract task assignment suggestions from message
+  const extractAssignmentSuggestion = useCallback((message: string): { taskKey: string; assignee: string } | null => {
+    console.log("[ChatUI] Checking for assignment suggestion in:", message.substring(0, 100) + "...");
     
-    // Try to match by email first
-    if (userEmail) {
-      const emailMatches = issues.filter(issue => 
-        issue.assigneeEmail?.toLowerCase() === userEmail.toLowerCase()
-      );
+    // Look for task key pattern
+    const taskKeyMatch = message.match(/([A-Za-z0-9]+-[0-9]+)/i);
+    if (!taskKeyMatch) {
+      console.log("[ChatUI] No task key found in message");
+      return null;
+    }
+    
+    const taskKey = taskKeyMatch[1];
+    console.log(`[ChatUI] Found task key: ${taskKey}`);
+    
+    // Helper function to clean up assignee names
+    const cleanAssigneeName = (name: string): string => {
+      // Extract just the first name or first and last name (up to two words)
+      const nameMatch = name.match(/^(\w+(?:\s+\w+)?)/);
+      if (nameMatch) {
+        return nameMatch[1];
+      }
       
-      if (emailMatches.length > 0) {
-        return emailMatches;
+      // If that fails, try to get just the first word
+      const firstWordMatch = name.match(/^(\w+)/);
+      return firstWordMatch ? firstWordMatch[1] : name;
+    };
+    
+    // Get a list of known team members from issues
+    const teamMemberNames = Array.from(new Set(
+      issues
+        .filter(issue => issue.assignee)
+        .map(issue => issue.assignee)
+    ));
+    
+    // First, try to find exact recommendation patterns with the task key
+    const exactRecommendationPatterns = [
+      new RegExp(`I recommend assigning ${taskKey} to (\\w+(?:\\s+\\w+)?)`, 'i'),
+      new RegExp(`recommend assigning ${taskKey} to (\\w+(?:\\s+\\w+)?)`, 'i'),
+      new RegExp(`${taskKey} to (\\w+(?:\\s+\\w+)?)`, 'i'),
+      new RegExp(`${taskKey}\\s+to\\s+(\\w+(?:\\s+\\w+)?)`, 'i')
+    ];
+    
+    for (const pattern of exactRecommendationPatterns) {
+      const match = message.match(pattern);
+      if (match) {
+        // Try to match with a known team member first
+        const rawName = match[1];
+        
+        // Check if this matches a known team member
+        for (const teamMember of teamMemberNames) {
+          if (teamMember && 
+              (rawName.toLowerCase().includes(teamMember.toLowerCase()) || 
+               teamMember.toLowerCase().includes(rawName.toLowerCase()))) {
+            console.log(`[ChatUI] Found team member match in recommendation: ${teamMember}`);
+            return { taskKey, assignee: teamMember };
+          }
+        }
+        
+        // If no team member match, clean the name
+        const assignee = cleanAssigneeName(rawName);
+        console.log(`[ChatUI] Found exact recommendation match: ${assignee}`);
+        return { taskKey, assignee };
       }
     }
     
-    // Try to match by name
-    if (userName) {
-      const nameMatches = issues.filter(issue => {
-        if (!issue.assignee || issue.assignee === 'Unassigned') return false;
+    // Look for explicit recommendation patterns with high confidence
+    const recommendationPatterns = [
+      /I recommend assigning (?:[A-Za-z0-9]+-[0-9]+)? to (\w+(?:\s+\w+)?)/i,
+      /recommend assigning (?:[A-Za-z0-9]+-[0-9]+)? to (\w+(?:\s+\w+)?)/i,
+      /recommend assigning this task to (\w+(?:\s+\w+)?)/i,
+      /should be assigned to (\w+(?:\s+\w+)?)/i,
+      /assigning (?:[A-Za-z0-9]+-[0-9]+)? to (\w+(?:\s+\w+)?)/i
+    ];
+    
+    for (const pattern of recommendationPatterns) {
+      const match = message.match(pattern);
+      if (match) {
+        // Try to match with a known team member first
+        const rawName = match[1];
         
-        const assigneeName = issue.assignee.toLowerCase();
-        const searchName = userName.toLowerCase();
+        // Check if this matches a known team member
+        for (const teamMember of teamMemberNames) {
+          if (teamMember && 
+              (rawName.toLowerCase().includes(teamMember.toLowerCase()) || 
+               teamMember.toLowerCase().includes(rawName.toLowerCase()))) {
+            console.log(`[ChatUI] Found team member match in recommendation: ${teamMember}`);
+            return { taskKey, assignee: teamMember };
+          }
+        }
         
-        return assigneeName.includes(searchName) || searchName.includes(assigneeName);
-      });
-      
-      if (nameMatches.length > 0) {
-        return nameMatches;
+        // If no team member match, clean the name
+        const assignee = cleanAssigneeName(rawName);
+        console.log(`[ChatUI] Found assignee from recommendation: ${assignee}`);
+        return { taskKey, assignee };
       }
     }
     
-    return [];
+    // Look for exact team member name matches in the message
+    for (const name of teamMemberNames) {
+      if (!name) continue;
+      
+      // Create a regex that matches the name as a whole word
+      const nameRegex = new RegExp(`\\b${name}\\b`, 'i');
+      if (nameRegex.test(message)) {
+        console.log(`[ChatUI] Found exact team member match: ${name}`);
+        return { taskKey, assignee: name };
+      }
+    }
+    
+    // Look for assignee suggestion patterns
+    const assigneePatterns = [
+      /recommend\s+(?:assigning\s+)?(?:it|this|task)?\s+to\s+(\w+(?:\s+\w+)?)/i,
+      /assign\s+(?:this\s+)?task\s+to\s+(\w+(?:\s+\w+)?)/i,
+      /suggest\s+(?:assigning\s+)?(?:it|this|task)?\s+to\s+(\w+(?:\s+\w+)?)/i,
+      /should\s+be\s+assigned\s+to\s+(\w+(?:\s+\w+)?)/i,
+      /best\s+(?:person|candidate|assignee)\s+(?:would\s+be|is)\s+(\w+(?:\s+\w+)?)/i,
+      /I recommend assigning [A-Za-z0-9]+-[0-9]+ to\s+(\w+(?:\s+\w+)?)/i,
+      /assigning [A-Za-z0-9]+-[0-9]+ to\s+(\w+(?:\s+\w+)?)/i,
+      /assigning this task to\s+(\w+(?:\s+\w+)?)/i,
+      /recommend assigning this task to\s+(\w+(?:\s+\w+)?)/i
+    ];
+    
+    for (const pattern of assigneePatterns) {
+      const match = message.match(pattern);
+      if (match) {
+        const assignee = cleanAssigneeName(match[1]);
+        console.log(`[ChatUI] Found assignee: ${assignee} using pattern: ${pattern}`);
+        return { taskKey, assignee };
+      }
+    }
+    
+    // If we found a task key but no assignee with the patterns above,
+    // try a more aggressive approach by looking for any name after "to" within a reasonable distance
+    const lines = message.split('\n');
+    for (const line of lines) {
+      if (line.toLowerCase().includes('recommend') || 
+          line.toLowerCase().includes('assign') || 
+          line.toLowerCase().includes('suggest')) {
+        
+        const toMatch = line.match(/to\s+(\w+(?:\s+\w+)?)/i);
+        if (toMatch) {
+          const assignee = cleanAssigneeName(toMatch[1]);
+          console.log(`[ChatUI] Found assignee using fallback method: ${assignee}`);
+          return { taskKey, assignee };
+        }
+      }
+    }
+    
+    // As a last resort, look for any name after "to" in the entire message
+    const toMatch = message.match(/to\s+(\w+(?:\s+\w+)?)/i);
+    if (toMatch) {
+      const assignee = cleanAssigneeName(toMatch[1]);
+      console.log(`[ChatUI] Found assignee using last resort method: ${assignee}`);
+      return { taskKey, assignee };
+    }
+    
+    console.log("[ChatUI] No assignee found in message");
+    return null;
   }, [issues]);
 
   return (
@@ -223,21 +514,75 @@ Current date: ${new Date().toLocaleDateString()}`;
             <div
               key={message.id}
               className={cn(
-                "flex rounded-lg px-4 py-2",
+                "flex flex-col rounded-lg px-4 py-2",
                 message.role === "user" 
                   ? "ml-auto bg-primary text-primary-foreground max-w-[80%]" 
                   : "bg-muted text-foreground max-w-[90%]",
               )}
             >
               {message.role === "assistant" ? (
-                <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <ReactMarkdown 
-                    remarkPlugins={[remarkGfm]}
-                    components={MarkdownComponents}
-                  >
-                    {message.content}
-                  </ReactMarkdown>
-                </div>
+                <>
+                  <div className="prose prose-sm dark:prose-invert max-w-none">
+                    <ReactMarkdown 
+                      remarkPlugins={[remarkGfm]}
+                      components={MarkdownComponents}
+                    >
+                      {message.content}
+                    </ReactMarkdown>
+                  </div>
+                  
+                  {/* Add task assignment button if suggestion is found */}
+                  {(() => {
+                    // First check if the last user message was about task assignment
+                    const lastUserMessage = messages
+                      .filter(m => m.role === 'user')
+                      .slice(-1)[0]?.content || '';
+                    
+                    // Get the previous user message to check for context
+                    const previousUserMessages = messages
+                      .filter(m => m.role === 'user')
+                      .slice(-2);
+                    
+                    const previousUserMessage = previousUserMessages.length > 1 ? previousUserMessages[0]?.content || '' : '';
+                    
+                    // Check if this is a direct task assignment query
+                    const isTaskAssignmentQuery = /whom\s+should\s+I\s+assign|who\s+should.*be\s+assigned|assign\s+task|assign\s+[A-Za-z0-9]+-[0-9]+\s+to|recommend.*for\s+task|recommend.*for\s+[A-Za-z0-9]+-[0-9]+/i.test(lastUserMessage);
+                    
+                    // Check if this is a follow-up to a task assignment query
+                    const isPreviousTaskAssignmentQuery = /whom\s+should\s+I\s+assign|who\s+should.*be\s+assigned|assign\s+task|assign\s+[A-Za-z0-9]+-[0-9]+\s+to|recommend.*for\s+task|recommend.*for\s+[A-Za-z0-9]+-[0-9]+/i.test(previousUserMessage);
+                    
+                    // Check if this is a follow-up mentioning a person or expressing preference
+                    const isAssigneeFollowUp = /assign\s+to|I\s+want\s+to\s+assign\s+to|assign\s+it\s+to|what\s+about|how\s+about|instead\s+of|prefer|rather|choose/i.test(lastUserMessage);
+                    
+                    // Check if the message contains a name
+                    const containsName = /\b(?:Daksh|Varad|Aryan|Jalin|Siddharth|Anirudh|Prajapati|Parte|Patel|Maheshwari|Sharma|Solankee)\b/i.test(lastUserMessage);
+                    
+                    // Show the button if it's a direct query or a relevant follow-up
+                    const shouldShowButton = isTaskAssignmentQuery || 
+                                           (isPreviousTaskAssignmentQuery && (isAssigneeFollowUp || containsName));
+                    
+                    if (!shouldShowButton) {
+                      return null;
+                    }
+                    
+                    console.log("[ChatUI] Task assignment context detected:", { 
+                      isTaskAssignmentQuery, 
+                      isPreviousTaskAssignmentQuery, 
+                      isAssigneeFollowUp,
+                      containsName
+                    });
+                    
+                    // Only then check for assignment suggestion
+                    const suggestion = extractAssignmentSuggestion(message.content);
+                    return suggestion ? (
+                      <TaskAssignmentButton 
+                        taskKey={suggestion.taskKey} 
+                        assignee={suggestion.assignee} 
+                        onAssign={assignTask}
+                      />
+                    ) : null;
+                  })()}
+                </>
               ) : (
                 message.content
               )}
@@ -253,7 +598,7 @@ Current date: ${new Date().toLocaleDateString()}`;
         </div>
       </ScrollArea>
 
-      <form onSubmit={onSubmit} className="border-t p-4 bg-background/80 backdrop-blur-sm">
+      <form onSubmit={handleSubmit} className="border-t p-4 bg-background/80 backdrop-blur-sm">
         <div className="flex gap-2">
           <Input
             ref={inputRef}

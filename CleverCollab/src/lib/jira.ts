@@ -348,4 +348,56 @@ export class JiraService {
       throw error;
     }
   }
+
+  // Method to assign an issue to a user
+  async assignIssue(issueKey: string, assigneeIdOrEmail: string): Promise<void> {
+    try {
+      console.log(`[JiraService] Assigning issue ${issueKey} to ${assigneeIdOrEmail}`);
+      
+      // Determine if the input is an email or an account ID
+      const isEmail = assigneeIdOrEmail.includes('@');
+      
+      // Construct the base URL without /search if present
+      const apiBase = this.baseUrl.replace(/\/search$/, '');
+      const url = `${apiBase}/issue/${issueKey}/assignee`;
+      
+      console.log(`[JiraService] Using URL: ${url}`);
+      
+      // Prepare the request body based on whether we have an email or account ID
+      const requestBody = isEmail 
+        ? { emailAddress: assigneeIdOrEmail } 
+        : { accountId: assigneeIdOrEmail };
+      
+      console.log(`[JiraService] Request body: ${JSON.stringify(requestBody)}`);
+      console.log(`[JiraService] Headers:`, this.headers);
+      console.log(`[JiraService] Auth:`, { username: this.auth.username, password: '***' });
+      
+      try {
+        const response = await axios.put(url, requestBody, {
+          headers: this.headers,
+          auth: this.auth
+        });
+        
+        // Check if the response is successful (204 No Content or 200 OK)
+        if (response.status !== 204 && response.status !== 200) {
+          console.error(`[JiraService] Failed to assign issue: ${response.status} ${response.statusText}`);
+          throw new Error(`Failed to assign issue: ${response.status} ${response.statusText}`);
+        }
+        
+        console.log(`[JiraService] Successfully assigned issue ${issueKey} to ${assigneeIdOrEmail}`);
+        console.log(`[JiraService] Response status: ${response.status}`);
+        return;
+      } catch (axiosError: any) {
+        console.error(`[JiraService] Axios error:`, axiosError);
+        if (axiosError.response) {
+          console.error(`[JiraService] Response status: ${axiosError.response.status}`);
+          console.error(`[JiraService] Response data:`, axiosError.response.data);
+        }
+        throw axiosError;
+      }
+    } catch (error: any) {
+      console.error(`[JiraService] Error assigning issue ${issueKey} to ${assigneeIdOrEmail}:`, error);
+      throw new Error(`Failed to assign issue: ${error.message}`);
+    }
+  }
 } 

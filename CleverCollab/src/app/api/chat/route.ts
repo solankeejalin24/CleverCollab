@@ -33,6 +33,31 @@ interface TeamMemberWorkload {
   }[];
 }
 
+// Interface for automation metadata
+interface AutomationMetadata {
+  type: 'ASSIGN_TASK';
+  taskKey: string;
+  assignee: string;
+  assigneeEmail: string;
+  confidence: 'HIGH' | 'MEDIUM' | 'LOW';
+  reasoning: string;
+  actionUrl: string; // URL to call for automation
+  successMessage: string; // Message to show in toast after success
+}
+
+// Add message type definition
+interface ChatMessage {
+  role: string;
+  content: string;
+}
+
+// Define team member interface
+interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+}
+
 // Function to calculate team member workloads
 function calculateTeamWorkloads(
   allIssues: FormattedJiraIssue[],
@@ -163,30 +188,261 @@ async function loadSkills(): Promise<Skill[]> {
   }
 }
 
+// Function to load team members data
+async function loadTeamMembers(): Promise<TeamMember[]> {
+  try {
+    const filePath = path.join(process.cwd(), 'data', 'team_members.json');
+    const fileExists = fs.existsSync(filePath);
+    
+    if (!fileExists) {
+      console.log('Team members file not found');
+      return [];
+    }
+    
+    const data = fs.readFileSync(filePath, 'utf8');
+    return JSON.parse(data);
+  } catch (error) {
+    console.error('Error loading team members:', error);
+    return [];
+  }
+}
+
+// Function to find team member by name
+function findTeamMemberByName(teamMembers: TeamMember[], name: string): TeamMember | undefined {
+  const normalizedName = name.toLowerCase();
+  return teamMembers.find(member => 
+    member.name.toLowerCase().includes(normalizedName) || 
+    normalizedName.includes(member.name.toLowerCase())
+  );
+}
+
+// Function to check if a message is about task assignment
+function isTaskAssignmentQuery(message: string): { isAssignment: boolean; taskKey?: string } {
+  const assignmentPatterns = [
+    /whom\s+should\s+I\s+assign\s+task\s+([A-Za-z0-9-]+)/i,
+    /assign\s+task\s+([A-Za-z0-9-]+)\s+to/i,
+    /who\s+should\s+([A-Za-z0-9-]+)\s+be\s+assigned\s+to/i,
+    /pls\s+assign\s+(?:task\s+)?([A-Za-z0-9-]+)\s+to/i,
+    /please\s+assign\s+(?:task\s+)?([A-Za-z0-9-]+)\s+to/i,
+    /assign\s+([A-Za-z0-9-]+)\s+to/i
+  ];
+
+  for (const pattern of assignmentPatterns) {
+    const match = message.match(pattern);
+    if (match) {
+      return { isAssignment: true, taskKey: match[1].toUpperCase() };
+    }
+  }
+
+  return { isAssignment: false };
+}
+
+// Function to prepare automation metadata for task assignment
+function prepareTaskAssignmentAutomation(
+  taskKey: string,
+  assignee: string,
+  assigneeId: string,
+  reasoning: string
+): AutomationMetadata {
+  return {
+    type: 'ASSIGN_TASK',
+    taskKey,
+    assignee,
+    assigneeEmail: assigneeId, // This now contains the account ID
+    confidence: 'HIGH',
+    reasoning,
+    actionUrl: `/api/jira/assign-task?taskKey=${taskKey}&assignee=${encodeURIComponent(assigneeId)}`,
+    successMessage: `Successfully assigned task ${taskKey} to ${assignee}`
+  };
+}
+
+// Function to check if message is a task assignment confirmation
+function isTaskAssignmentConfirmation(message: string): boolean {
+  const confirmationPattern = /^(yes|ok|sure|proceed|confirm|do it|assign it|go ahead)/i;
+  return confirmationPattern.test(message.trim());
+}
+
+// Function to handle task assignment
+async function handleTaskAssignment(taskKey: string, assignee: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const response = await fetch('/api/jira/assign-task', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ taskKey, assignee }),
+    });
+
+    const data = await response.json();
+    
+    if (data.success) {
+      return {
+        success: true,
+        message: `Successfully assigned task ${taskKey} to ${assignee}`,
+      };
+    } else {
+      return {
+        success: false,
+        message: `Failed to assign task: ${data.error}`,
+      };
+    }
+  } catch (error) {
+    console.error('Error assigning task:', error);
+    return {
+      success: false,
+      message: 'Failed to assign task due to an error',
+    };
+  }
+}
+
+// Function to handle task assignment confirmation
+async function handleTaskAssignmentConfirmation(
+  taskKey: string,
+  assigneeId: string,
+  assigneeName: string
+): Promise<Response> {
+  try {
+    console.log(`[Chat API] Attempting to assign task ${taskKey} to ${assigneeName} (ID: ${assigneeId})`);
+    
+    // Create a new JiraService instance
+    const jiraService = new JiraService();
+    
+    // Directly call the assignIssue method
+    await jiraService.assignIssue(taskKey, assigneeId);
+    
+    console.log(`[Chat API] Successfully assigned task ${taskKey} to ${assigneeName} (ID: ${assigneeId})`);
+    
+    // Set headers with toast notification
+    const headers = new Headers({
+      'Content-Type': 'application/json',
+      'X-Show-Toast': JSON.stringify({
+        type: 'success',
+        message: `Successfully assigned task ${taskKey} to ${assigneeName}`
+      })
+    });
+
+    console.log('[Chat API] Setting toast notification header for successful assignment');
+
+    // Return success response
+    return new Response(
+      JSON.stringify({
+        message: `Task ${taskKey} has been successfully assigned to ${assigneeName}.`,
+        success: true
+      }),
+      { headers }
+    );
+  } catch (error: any) {
+    console.error('[Chat API] Error assigning task:', error);
+    
+    // Set headers with error toast notification
+    const headers = new Headers({
+      'Content-Type': 'application/json',
+      'X-Show-Toast': JSON.stringify({
+        type: 'error',
+        message: `Failed to assign task: ${error.message}`
+      })
+    });
+
+    console.log('[Chat API] Setting toast notification header for failed assignment');
+
+    // Return error response
+    return new Response(
+      JSON.stringify({
+        message: `Failed to assign task: ${error.message}`,
+        success: false
+      }),
+      { headers, status: 500 }
+    );
+  }
+}
+
 export async function POST(req: Request) {
   try {
-    console.log("Chat API route called");
+    console.log("[Chat API] Chat API route called");
     
     // Get the request body
     const body = await req.json();
-    console.log("Request body:", JSON.stringify(body, null, 2));
+    console.log("[Chat API] Request body:", JSON.stringify(body, null, 2));
+    
+    const { messages: rawMessages, automationContext, userEmail: requestUserEmail } = body;
+    const lastUserMessage = rawMessages.findLast((msg: ChatMessage) => msg.role === 'user')?.content || '';
+    
+    // Load team members data
+    const teamMembers = await loadTeamMembers();
+    console.log(`[Chat API] Loaded ${teamMembers.length} team members`);
+    
+    // Check if this is a confirmation of a pending task assignment
+    if (automationContext?.type === 'ASSIGN_TASK' && isTaskAssignmentConfirmation(lastUserMessage)) {
+      console.log("[Chat API] Detected task assignment confirmation with automation context, processing...");
+      
+      // Handle the task assignment confirmation
+      return handleTaskAssignmentConfirmation(
+        automationContext.taskKey,
+        automationContext.assigneeEmail, // This now contains the account ID
+        automationContext.assignee
+      );
+    }
+    
+    // Check if this is a direct assignment request with confirmation words
+    const directAssignmentResult = isTaskAssignmentQuery(lastUserMessage);
+    if (directAssignmentResult.isAssignment) {
+      console.log("[Chat API] Detected direct assignment request:", directAssignmentResult);
+      
+      // Find the task
+      const jiraService = new JiraService();
+      const allIssuesResponse = await jiraService.getIssues('project is not EMPTY', 5000);
+      const allIssues = allIssuesResponse.map(issue => jiraService.formatIssue(issue));
+      const task = findTaskByKey(allIssues, directAssignmentResult.taskKey || '');
+      
+      if (task) {
+        console.log(`[Chat API] Found task: ${task.key} - ${task.summary}`);
+        
+        // Extract assignee from message
+        const assigneeMatch = lastUserMessage.match(/(?:to|assign to|assign it to)\s+(\w+(?:\s+\w+)*)\s*$/i);
+        if (assigneeMatch) {
+          const requestedAssignee = assigneeMatch[1].toLowerCase();
+          console.log(`[Chat API] Extracted assignee from message: "${requestedAssignee}"`);
+          
+          // Find team member
+          const teamMember = findTeamMemberByName(teamMembers, requestedAssignee);
+          if (teamMember) {
+            console.log(`[Chat API] Found team member: ${teamMember.name} (ID: ${teamMember.id})`);
+            
+            // Check if this is also a confirmation message
+            if (isTaskAssignmentConfirmation(lastUserMessage)) {
+              console.log("[Chat API] Message also contains confirmation, directly assigning task");
+              
+              // Directly assign the task
+              return handleTaskAssignmentConfirmation(
+                task.key,
+                teamMember.id,
+                teamMember.name
+              );
+            }
+          } else {
+            console.log(`[Chat API] Could not find team member for: "${requestedAssignee}"`);
+          }
+        }
+      } else {
+        console.log(`[Chat API] Could not find task with key: ${directAssignmentResult.taskKey}`);
+      }
+    }
     
     // Get the user's email from the request body or from the auth session
-    let userEmail = body.userEmail;
+    let userEmail = requestUserEmail;
     
     // If userEmail is not provided in the request body, try to get it from the auth session
     if (!userEmail) {
-      // Get the current user using Clerk's currentUser helper
       const user = await currentUser();
       if (user?.emailAddresses?.[0]?.emailAddress) {
         userEmail = user.emailAddresses[0].emailAddress;
       } else {
-        console.warn('No user email found in request or session');
+        console.warn('[Chat API] No user email found in request or session');
       }
     }
     
-    // Log the user email for debugging (remove in production)
-    console.log('Using user email:', userEmail);
+    // Log the user email for debugging
+    console.log('[Chat API] Using user email:', userEmail);
     
     // Fetch Jira issues
     let userIssues: FormattedJiraIssue[] = [];
@@ -260,13 +516,126 @@ export async function POST(req: Request) {
       : [];
     
     // Extract only the fields that OpenAI accepts
-    const messages = body.messages.map((message: any) => {
-      // Only keep the role and content fields for each message
-      return {
+    const messages = rawMessages.map((message: any) => ({
         role: message.role,
         content: message.content
-      };
-    });
+    }));
+    
+    // Check if the last user message is about task assignment
+    const assignmentQueryResult = isTaskAssignmentQuery(lastUserMessage);
+    
+    let automationMetadata: AutomationMetadata | null = null;
+    let shouldExecuteAssignment = false;
+
+    // Handle task assignment automation
+    if (assignmentQueryResult.isAssignment) {
+      const task = findTaskByKey(allIssues, assignmentQueryResult.taskKey || '');
+      if (task) {
+        // Load team members for ID lookup
+        const teamMembers = await loadTeamMembers();
+        
+        // Check if this is a confirmation message
+        const isConfirmation = /^(?:yes|ok|sure|confirm|proceed|go ahead|do it)(?:\s+assign\s+it\s+to\s+(\w+(?:\s+\w+)*))?/i.test(lastUserMessage);
+        
+        // Check if the message contains a specific assignee
+        const assigneeMatch = lastUserMessage.match(/(?:to|assign to|assign it to)\s+(\w+(?:\s+\w+)*)\s*$/i);
+        
+        if (assigneeMatch) {
+          // User specified an assignee
+          const requestedAssignee = assigneeMatch[1].toLowerCase();
+          const teamWorkloads = calculateTeamWorkloads(allIssues, skills);
+          const matchingWorkload = Array.from(teamWorkloads.values())
+            .find(member => member.name.toLowerCase().includes(requestedAssignee));
+
+          if (matchingWorkload) {
+            // Find the team member ID
+            const teamMember = findTeamMemberByName(teamMembers, matchingWorkload.name);
+            
+            if (teamMember) {
+              automationMetadata = prepareTaskAssignmentAutomation(
+                task.key,
+                matchingWorkload.name,
+                teamMember.id,
+                `User requested to assign task to ${matchingWorkload.name}`
+              );
+              shouldExecuteAssignment = isConfirmation;
+              
+              console.log(`Found team member ID for ${matchingWorkload.name}: ${teamMember.id}`);
+            } else {
+              console.warn(`Could not find team member ID for ${matchingWorkload.name}`);
+            }
+          }
+        } else if (isConfirmation) {
+          // User confirmed the last suggested assignment
+          const previousMessage = messages[messages.length - 2]?.content || '';
+          const previousAssigneeMatch = previousMessage.match(/assign\s+(?:this\s+)?task\s+to\s+(\w+(?:\s+\w+)*)/i);
+          
+          if (previousAssigneeMatch) {
+            const suggestedAssignee = previousAssigneeMatch[1].toLowerCase();
+            const teamWorkloads = calculateTeamWorkloads(allIssues, skills);
+            const matchingWorkload = Array.from(teamWorkloads.values())
+              .find(member => member.name.toLowerCase().includes(suggestedAssignee));
+
+            if (matchingWorkload) {
+              // Find the team member ID
+              const teamMember = findTeamMemberByName(teamMembers, matchingWorkload.name);
+              
+              if (teamMember) {
+                automationMetadata = prepareTaskAssignmentAutomation(
+                  task.key,
+                  matchingWorkload.name,
+                  teamMember.id,
+                  'User confirmed the suggested assignment'
+                );
+                shouldExecuteAssignment = true;
+                
+                console.log(`Found team member ID for ${matchingWorkload.name}: ${teamMember.id}`);
+              } else {
+                console.warn(`Could not find team member ID for ${matchingWorkload.name}`);
+              }
+            }
+          }
+        } else {
+          // No specific assignee mentioned, find the best match
+          const teamWorkloads = calculateTeamWorkloads(allIssues, skills);
+          const bestAssignee = Array.from(teamWorkloads.values())
+            .sort((a, b) => {
+              const hoursDiff = a.estimatedHoursRemaining - b.estimatedHoursRemaining;
+              return hoursDiff !== 0 ? hoursDiff : a.totalTasks - b.totalTasks;
+            })[0];
+
+          if (bestAssignee) {
+            // Find the team member ID
+            const teamMember = findTeamMemberByName(teamMembers, bestAssignee.name);
+            
+            if (teamMember) {
+              automationMetadata = prepareTaskAssignmentAutomation(
+                task.key,
+                bestAssignee.name,
+                teamMember.id,
+                'Selected based on current workload and relevant skills.'
+              );
+              
+              console.log(`Found team member ID for ${bestAssignee.name}: ${teamMember.id}`);
+            } else {
+              console.warn(`Could not find team member ID for ${bestAssignee.name}`);
+            }
+          }
+        }
+
+        // If we should execute the assignment and have valid metadata
+        if (shouldExecuteAssignment && automationMetadata) {
+          try {
+            const jiraService = new JiraService();
+            await jiraService.assignIssue(automationMetadata.taskKey, automationMetadata.assigneeEmail);
+            console.log(`Successfully assigned ${automationMetadata.taskKey} to ${automationMetadata.assignee} (ID: ${automationMetadata.assigneeEmail})`);
+          } catch (error: any) {
+            console.error('Error assigning task:', error);
+            throw new Error(`Failed to assign task: ${error.message}`);
+          }
+        }
+      }
+    }
     
     // Add a system message if not already present
     const hasSystemMessage = messages.some((msg: { role: string }) => msg.role === 'system');
@@ -338,6 +707,13 @@ For task assignment recommendations:
 4. Balance workload across the team
 5. Consider task requirements and complexity
 
+IMPORTANT INSTRUCTIONS FOR TASK ASSIGNMENTS:
+When someone asks "Who should I assign task X to?" or similar questions:
+1. Always include the task key (e.g., "PN2-13") in your response
+2. Clearly state your recommendation with phrases like "I recommend assigning this task to [Name]" or "Task X should be assigned to [Name]"
+3. Provide your reasoning for the recommendation
+4. Do not ask for confirmation - the UI will automatically show an assignment button
+
 FORMATTING INSTRUCTIONS:
 - Use proper markdown formatting in your responses
 - Use headings (### for main sections, #### for subsections)
@@ -378,11 +754,36 @@ When asked about task assignments:
 4. Consider upcoming deadlines and time constraints
 5. Provide a clear recommendation with reasoning`
       });
+
+      // Add automation metadata to the system message
+      const systemMessageContent = `${messages[0].content}
+
+${automationMetadata ? `
+AUTOMATION CONTEXT:
+{
+  "type": "${automationMetadata.type}",
+  "taskKey": "${automationMetadata.taskKey}",
+  "assignee": "${automationMetadata.assignee}",
+  "assigneeEmail": "${automationMetadata.assigneeEmail}",
+  "confidence": "${automationMetadata.confidence}",
+  "reasoning": "${automationMetadata.reasoning}",
+  "actionUrl": "${automationMetadata.actionUrl}",
+  "successMessage": "${automationMetadata.successMessage}"
+}
+
+When responding to this query:
+1. Make your recommendation for task assignment
+2. End your response with:
+   "Would you like me to automatically assign this task to [assignee]? Click the automation button below to proceed."
+3. If the user suggests a different assignee, acknowledge it and offer to automate that assignment instead.
+4. After successful automation, a confirmation message will appear.` : ''}`;
+
+      messages[0].content = systemMessageContent;
     }
     
     // Create a clean request body for OpenAI
     const openaiRequestBody = {
-      model: body.model || "gpt-4o",
+      model: body.model || "gpt-4",  // Fixed model name
       messages: messages,
       temperature: body.temperature || 0.7,
       stream: true
@@ -467,12 +868,35 @@ When asked about task assignments:
     
     console.log("OpenAI API response received, streaming back to client");
     
-    // Return the processed stream
-    return new Response(processedStream, {
-      headers: {
+    // Modify the response to include automation metadata and toast notification
+    const headers: Record<string, string> = {
         'Content-Type': 'text/plain; charset=utf-8',
-      },
-    });
+      'X-Automation-Available': automationMetadata ? 'true' : 'false'
+    };
+
+    if (shouldExecuteAssignment) {
+      headers['X-Show-Toast'] = JSON.stringify({
+        type: 'success',
+        message: `Successfully assigned task ${automationMetadata?.taskKey} to ${automationMetadata?.assignee}`
+      });
+      console.log('Setting toast notification header for automatic assignment');
+    }
+
+    if (automationMetadata) {
+      headers['X-Automation-Metadata'] = JSON.stringify({
+        type: automationMetadata.type,
+        taskKey: automationMetadata.taskKey,
+        assignee: automationMetadata.assignee,
+        assigneeEmail: automationMetadata.assigneeEmail,
+        confidence: automationMetadata.confidence,
+        reasoning: automationMetadata.reasoning,
+        actionUrl: automationMetadata.actionUrl,
+        successMessage: automationMetadata.successMessage,
+        showToast: shouldExecuteAssignment
+      });
+    }
+
+    return new Response(processedStream, { headers });
   } catch (error: any) {
     console.error('Error in chat API:', error);
     console.error('Error stack:', error.stack);
