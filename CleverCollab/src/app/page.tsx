@@ -136,40 +136,40 @@ export default function Home() {
           </div>
         </SignedOut>
 
-        <div className="flex-1 flex flex-col items-center justify-center py-12 text-center">
-          <div className="mb-1">
+        <div className="flex-1 flex flex-col items-center justify-center py-10 text-center">
+          <div className="mb-0">
             <Logo size="large" />
           </div>
 
           <SignedIn>
-            <h2 className="text-2xl font-medium mb-6">Welcome, {user?.firstName || user?.username || "User"}!</h2>
+            <h2 className="text-2xl font-medium mb-4">Welcome, {user?.firstName || user?.username || "User"}!</h2>
 
-            <div className="w-full max-w-4xl mb-12">
+            <div className="w-full max-w-4xl mb-8">
               <Card className="bg-card border shadow-sm overflow-hidden">
-                <CardHeader className="bg-background sticky top-0 z-10">
+                <CardHeader className="bg-background sticky top-0 z-10 pb-2">
                   <CardTitle className="text-xl">My Tasks ✨</CardTitle>
-                  <CardDescription>Your assigned tasks, intelligently prioritized</CardDescription>
+                  <CardDescription className="mb-0">Your assigned tasks, intelligently prioritized</CardDescription>
                 </CardHeader>
                 {loading ? (
-                  <CardContent className="flex items-center justify-center py-10">
+                  <CardContent className="flex items-center justify-center py-6">
                     <Loader2 className="h-6 w-6 animate-spin text-primary mr-2" />
                     <span>Loading your tasks...</span>
                   </CardContent>
                 ) : error ? (
-                  <CardContent className="text-center py-10">
+                  <CardContent className="text-center py-6">
                     <p className="text-destructive mb-2">Error loading tasks: {error}</p>
                     <Button onClick={() => fetchIssues()} variant="outline" size="sm">
                       Retry
                     </Button>
                   </CardContent>
                 ) : myIssues.length === 0 ? (
-                  <CardContent className="text-center py-10 text-muted-foreground">
+                  <CardContent className="text-center py-6 text-muted-foreground">
                     <p>You don&apos;t have any assigned tasks.</p>
                   </CardContent>
                 ) : (
-                  <ScrollArea className="h-[320px]" scrollHideDelay={100}>
-                    <CardContent className="p-4">
-                      <div className="grid gap-4 md:grid-cols-2">
+                  <ScrollArea className="h-[300px]" scrollHideDelay={100}>
+                    <CardContent className="p-3">
+                      <div className="grid gap-3 md:grid-cols-2">
                         <TooltipProvider>
                           {myIssues.map((issue) => (
                             <Tooltip key={issue.id}>
@@ -177,15 +177,15 @@ export default function Home() {
                                 <Card
                                   className="border-primary/20 dark:border-primary/10 hover:border-primary/50 dark:hover:border-primary/30 transition-all duration-200 overflow-hidden"
                                 >
-                                  <CardContent className="p-4">
-                                    <div className="flex justify-between items-start mb-2">
+                                  <CardContent className="p-3">
+                                    <div className="flex justify-between items-start mb-1">
                                       <Badge variant={getBadgeVariant(issue.issueType)} className="text-xs">
                                         {issue.issueType}
                                       </Badge>
                                       <span className="text-xs text-muted-foreground">{issue.key}</span>
                                     </div>
 
-                                    <div className="flex justify-between items-start mb-2">
+                                    <div className="flex justify-between items-start mb-1">
                                       <h3 className="font-medium">{issue.summary}</h3>
                                     </div>
 
@@ -211,7 +211,7 @@ export default function Home() {
                                     </div>
 
                                     {issue.parent && issue.parent !== "No Parent" && (
-                                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-2">
+                                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                                         <LinkIcon className="h-3 w-3" />
                                         <span className="truncate">{issue.parent}</span>
                                       </div>
@@ -236,14 +236,14 @@ export default function Home() {
           </SignedIn>
 
           <SignedOut>
-            <h2 className="text-2xl font-medium mb-4">Welcome to Clever Collab</h2>
+            <h2 className="text-2xl font-medium mb-3">Welcome to Clever Collab</h2>
           </SignedOut>
 
-          <p className="text-xl text-muted-foreground mb-10 max-w-md text-center">
+          <p className="text-xl text-muted-foreground mb-6 max-w-md text-center">
             Autonomous AI agent for intelligent project management, data retrieval, and real-time collaboration
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 mb-8">
+          <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <Button 
               asChild 
               size="lg" 
@@ -270,12 +270,12 @@ export default function Home() {
           </Button>
 
           <SignedOut>
-            <div className="mt-12 p-6 border rounded-lg bg-card/50 backdrop-blur-sm max-w-md w-full shadow-sm">
-              <h3 className="text-xl font-medium mb-4">Get Started</h3>
-              <p className="text-muted-foreground mb-6">
+            <div className="mt-8 p-4 border rounded-lg bg-card/50 backdrop-blur-sm max-w-md w-full shadow-sm">
+              <h3 className="text-xl font-medium mb-2">Get Started</h3>
+              <p className="text-muted-foreground mb-4">
                 Sign in to your account to access all features and save your progress.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Button asChild size="lg" className="px-8 w-full bg-primary hover:bg-primary/90 text-primary-foreground">
                   <Link href="/sign-in">Sign In</Link>
                 </Button>
