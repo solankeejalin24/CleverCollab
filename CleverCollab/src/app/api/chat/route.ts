@@ -153,6 +153,17 @@ export async function POST(req: Request) {
         `${issue.key}: ${issue.summary} (Status: ${issue.status}, Due: ${issue.dueDate || 'Not set'})`
       ).join('\n');
       
+      // Calculate workload summary
+      const totalUserTasks = userIssues.length;
+      const totalEstimatedHours = userIssues.reduce((total, issue) => 
+        total + (issue.estimatedHours || 0), 0
+      );
+      
+      const workloadSummary = `
+WORKLOAD SUMMARY:
+- Total Assigned Tasks: ${totalUserTasks}
+- Total Estimated Hours Remaining: ${totalEstimatedHours.toFixed(1)} hours`;
+      
       // Format user's skills
       const userSkillsFormatted = userSkills.map((skill: Skill) => 
         `${skill.name} (${skill.category})`
@@ -194,6 +205,8 @@ FORMATTING INSTRUCTIONS:
 
 Current user email: ${userEmail || 'Unknown'}
 Current date: ${new Date().toLocaleDateString()}
+
+${workloadSummary}
 
 USER'S TASKS:
 ${userTasksFormatted || 'No tasks assigned'}
