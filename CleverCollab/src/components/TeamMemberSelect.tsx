@@ -74,12 +74,12 @@ export function TeamMemberSelect({
       onValueChange={handleChange}
       disabled={disabled || isLoading}
     >
-      <SelectTrigger className="w-full">
+      <SelectTrigger className="w-full h-7 text-xs py-0 px-2">
         <SelectValue placeholder="Select assignee" />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="text-xs">
         {teamMembers.map(member => (
-          <SelectItem key={member.id} value={member.name}>
+          <SelectItem key={member.id} value={member.name} className="py-1">
             {member.name}
           </SelectItem>
         ))}

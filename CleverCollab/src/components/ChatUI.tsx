@@ -66,10 +66,10 @@ function TaskAssignmentButton({ taskKey, assignee, onAssign }: {
   };
   
   return (
-    <div className="mt-3 p-3 border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-600">
-      <div className="flex flex-col gap-2">
-        <div className="text-sm font-medium">Assign Task</div>
-        <div className="grid grid-cols-[1fr,2fr] gap-2">
+    <div className="mt-2 p-2 border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900">
+      <div className="flex flex-col gap-1">
+        <div className="text-xs font-medium">Assign Task</div>
+        <div className="grid grid-cols-[1fr,2fr] gap-1 items-center">
           <div className="text-xs text-gray-500 dark:text-gray-400">Task Key:</div>
           <div className="text-xs font-medium">{taskKey}</div>
           <div className="text-xs text-gray-500 dark:text-gray-400">Assignee:</div>
@@ -84,7 +84,7 @@ function TaskAssignmentButton({ taskKey, assignee, onAssign }: {
         </div>
         <button 
           onClick={handleAssign}
-          className="mt-2 w-full bg-primary text-primary-foreground hover:bg-primary/90 py-1 px-3 rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          className="mt-1 w-full bg-primary text-primary-foreground hover:bg-primary/90 py-1 px-2 rounded-md text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={isLoading || !selectedAssigneeName}
         >
           {isLoading ? 'Assigning...' : `Confirm Assignment`}
@@ -676,8 +676,8 @@ Current date: ${new Date().toLocaleDateString()}`;
   };
 
   return (
-    <div className={cn("flex flex-col h-full", className)}>
-      <div className="flex items-center justify-between border-b px-4 py-3 bg-background/80 backdrop-blur-sm sticky top-0 z-10">
+    <div className={cn("flex flex-col h-full border border-gray-300 dark:border-gray-700 rounded-lg shadow-md overflow-hidden", className)}>
+      <div className="flex items-center justify-between border-b border-gray-300 dark:border-gray-700 px-4 py-3 bg-background/80 backdrop-blur-sm sticky top-0 z-10">
         <h2 className="font-semibold">Project Management Assistant</h2>
         <Button 
           variant="ghost" 
@@ -691,16 +691,16 @@ Current date: ${new Date().toLocaleDateString()}`;
         </Button>
       </div>
 
-      <ScrollArea className="flex-1" scrollHideDelay={100} type="always">
+      <ScrollArea className="flex-1 border-y border-gray-200 dark:border-gray-800" scrollHideDelay={100} type="always">
         <div className="flex flex-col gap-4 p-4" ref={scrollAreaRef}>
           {messages.map((message) => (
             <div
               key={message.id}
               className={cn(
-                "flex flex-col rounded-lg px-4 py-2",
+                "flex flex-col rounded-lg px-4 py-2 shadow-sm",
                 message.role === "user" 
-                  ? "ml-auto bg-primary text-primary-foreground max-w-[80%]" 
-                  : "bg-muted text-foreground max-w-[90%]",
+                  ? "ml-auto bg-primary text-primary-foreground max-w-[80%] border border-primary/20" 
+                  : "bg-muted text-foreground max-w-[90%] border border-gray-200 dark:border-gray-800",
               )}
             >
               {message.role === "assistant" ? (
@@ -783,7 +783,7 @@ Current date: ${new Date().toLocaleDateString()}`;
           ))}
           
           {isLoading && (
-            <div className="flex items-center gap-2 bg-muted text-foreground rounded-lg px-4 py-2 max-w-[80%]">
+            <div className="flex items-center gap-2 bg-muted text-foreground rounded-lg px-4 py-2 max-w-[80%] border border-gray-200 dark:border-gray-800 shadow-sm">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span className="text-sm">Thinking...</span>
             </div>
@@ -791,7 +791,7 @@ Current date: ${new Date().toLocaleDateString()}`;
         </div>
       </ScrollArea>
 
-      <form onSubmit={handleSubmit} className="border-t p-4 bg-background/80 backdrop-blur-sm">
+      <form onSubmit={handleSubmit} className="border-t border-gray-300 dark:border-gray-700 p-4 bg-background/80 backdrop-blur-sm">
         <div className="flex gap-2">
           <Input
             ref={inputRef}

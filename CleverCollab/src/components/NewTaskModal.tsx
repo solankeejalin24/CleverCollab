@@ -362,29 +362,30 @@ export function NewTaskModal({ isOpen, onClose, onTaskCreated, initialColumnId }
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto [&>button]:hidden">
-        <DialogHeader className="flex flex-row justify-between items-center">
-          <DialogTitle className="text-xl">Create New Task</DialogTitle>
+        <DialogHeader className="flex flex-row justify-between items-center py-2">
+          <DialogTitle className="text-lg">Create New Task</DialogTitle>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
         </DialogHeader>
         
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="summary">Summary (required)</Label>
+        <div className="space-y-3 py-2">
+          <div className="space-y-1">
+            <Label htmlFor="summary" className="text-sm">Summary (required)</Label>
             <Input
               id="summary"
               name="summary"
               placeholder="Task summary"
               value={formData.summary}
               onChange={handleInputChange}
+              className="h-8"
             />
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="description">Description (required)</Label>
+          <div className="space-y-1">
+            <Label htmlFor="description" className="text-sm">Description (required)</Label>
             <textarea
-              className="w-full min-h-[120px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
+              className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
               id="description"
               name="description"
               placeholder="Describe what needs to be done"
@@ -393,14 +394,14 @@ export function NewTaskModal({ isOpen, onClose, onTaskCreated, initialColumnId }
             />
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="issueType">Issue Type</Label>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label htmlFor="issueType" className="text-sm">Issue Type</Label>
               <Select 
                 value={formData.issueType} 
                 onValueChange={(value) => handleSelectChange("issueType", value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-8">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -411,13 +412,13 @@ export function NewTaskModal({ isOpen, onClose, onTaskCreated, initialColumnId }
               </Select>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="assigneeName">Assignee (optional)</Label>
+            <div className="space-y-1">
+              <Label htmlFor="assigneeName" className="text-sm">Assignee (optional)</Label>
               <Select 
                 value={formData.assigneeName} 
                 onValueChange={(value) => handleAssigneeChange("assigneeName", value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-8">
                   <SelectValue placeholder="Select assignee" />
                 </SelectTrigger>
                 <SelectContent>
@@ -431,19 +432,20 @@ export function NewTaskModal({ isOpen, onClose, onTaskCreated, initialColumnId }
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div className="space-y-2">
-              <Label htmlFor="startDate">Start Date</Label>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="space-y-1">
+              <Label htmlFor="startDate" className="text-sm">Start Date</Label>
               <Input
                 id="startDate"
                 name="startDate"
                 type="date"
                 value={formData.startDate}
                 onChange={handleInputChange}
+                className="h-8"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="dueDate">Due Date</Label>
+            <div className="space-y-1">
+              <Label htmlFor="dueDate" className="text-sm">Due Date</Label>
               <Input
                 id="dueDate"
                 name="dueDate"
@@ -451,45 +453,49 @@ export function NewTaskModal({ isOpen, onClose, onTaskCreated, initialColumnId }
                 value={formData.dueDate}
                 onChange={handleInputChange}
                 placeholder="Auto-calculated if empty"
+                className="h-8"
               />
-              <span className="text-xs text-muted-foreground">
-                Auto-calculated based on estimated hours if left empty
-              </span>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="estimatedHours" className="text-sm">Est. Hours</Label>
+              <Input
+                id="estimatedHours"
+                name="estimatedHours"
+                type="number"
+                placeholder="Enter hours"
+                value={formData.estimatedHours}
+                onChange={handleInputChange}
+                className="h-8"
+              />
             </div>
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="estimatedHours">Estimated Hours (optional)</Label>
-            <Input
-              id="estimatedHours"
-              name="estimatedHours"
-              type="number"
-              placeholder="Enter estimated hours"
-              value={formData.estimatedHours}
-              onChange={handleInputChange}
-            />
+          <div className="text-xs text-muted-foreground -mt-2">
+            Due date is auto-calculated based on estimated hours if left empty
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="projectKey">Project Key</Label>
+          <div className="space-y-1">
+            <Label htmlFor="projectKey" className="text-sm">Project Key</Label>
             <Input
               id="projectKey"
               name="projectKey"
               value={formData.projectKey}
               onChange={handleInputChange}
+              className="h-8"
             />
           </div>
         </div>
         
-        <DialogFooter className="flex sm:justify-between">
+        <DialogFooter className="flex sm:justify-between pt-2">
           <Button 
             variant="outline" 
             onClick={refineWithAI}
             disabled={aiRefining || loading || !formData.description}
+            size="sm"
           >
             {aiRefining ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-3 w-3 animate-spin" />
                 Refining...
               </>
             ) : (
@@ -500,16 +506,18 @@ export function NewTaskModal({ isOpen, onClose, onTaskCreated, initialColumnId }
             <Button 
               variant="outline" 
               onClick={onClose}
+              size="sm"
             >
               Cancel
             </Button>
             <Button 
               onClick={createTask}
               disabled={loading || !formData.summary || !formData.description}
+              size="sm"
             >
               {loading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-3 w-3 animate-spin" />
                   Creating...
                 </>
               ) : (
