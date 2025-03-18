@@ -148,7 +148,11 @@ export function SkillsModal() {
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={handleAddManualSkill} disabled={!newSkillName.trim()}>
+            <Button 
+              onClick={handleAddManualSkill} 
+              disabled={!newSkillName.trim()}
+              className="bg-[#64c6c4] hover:bg-[#64c6c4]/80 text-white hover:text-white transition-colors"
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add Skill
             </Button>
@@ -169,7 +173,11 @@ export function SkillsModal() {
                   ))}
                 </SelectContent>
               </Select>
-              <Button onClick={handleAddCommonSkill} disabled={!selectedCommonSkill}>
+              <Button 
+                onClick={handleAddCommonSkill} 
+                disabled={!selectedCommonSkill}
+                className="bg-[#64c6c4] hover:bg-[#64c6c4]/80 text-white hover:text-white transition-colors"
+              >
                 Add
               </Button>
             </div>
@@ -190,17 +198,17 @@ export function SkillsModal() {
                   ) : (
                     <div className="flex flex-wrap gap-2 p-1">
                       {skills.map((skill) => (
-                        <Badge key={skill.id} variant="secondary" className="flex items-center gap-1">
+                        <Badge key={skill.id} variant="secondary" className="flex items-center gap-1 bg-[#212245] hover:bg-[#212245]/80 text-white hover:text-white">
                           {skill.name}
                           {skill.teamMemberName && (
-                            <span className="text-xs text-muted-foreground ml-1">({skill.teamMemberName})</span>
+                            <span className="text-xs text-white ml-1">({skill.teamMemberName})</span>
                           )}
                           <button
                             onClick={() => handleRemoveSkill(skill.id, skill.name, skill.teamMemberName)}
-                            className="ml-1 rounded-full hover:bg-muted p-0.5"
+                            className="ml-1 rounded-full hover:bg-[#212245]/50 p-0.5"
                             aria-label={`Remove ${skill.name}`}
                           >
-                            <X className="h-3 w-3" />
+                            <X className="h-3 w-3 text-white" />
                           </button>
                         </Badge>
                       ))}
@@ -229,14 +237,14 @@ export function SkillsModal() {
                             </div>
                             <div className="flex flex-wrap gap-2 pl-6">
                               {memberSkills.map((skill) => (
-                                <Badge key={skill.id} variant="secondary" className="flex items-center gap-1">
+                                <Badge key={skill.id} variant="secondary" className="flex items-center gap-1 bg-[#212245] hover:bg-[#212245]/80 text-white hover:text-white">
                                   {skill.name}
                                   <button
                                     onClick={() => handleRemoveSkill(skill.id, skill.name, skill.teamMemberName)}
-                                    className="ml-1 rounded-full hover:bg-muted p-0.5"
+                                    className="ml-1 rounded-full hover:bg-[#212245]/50 p-0.5"
                                     aria-label={`Remove ${skill.name}`}
                                   >
-                                    <X className="h-3 w-3" />
+                                    <X className="h-3 w-3 text-white" />
                                   </button>
                                 </Badge>
                               ))}

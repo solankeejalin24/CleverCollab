@@ -84,7 +84,7 @@ function TaskAssignmentButton({ taskKey, assignee, onAssign }: {
         </div>
         <button 
           onClick={handleAssign}
-          className="mt-1 w-full bg-primary text-primary-foreground hover:bg-primary/90 py-1 px-2 rounded-md text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          className="mt-1 w-full bg-[#a4cb6a] hover:bg-[#a4cb6a]/80 text-white hover:text-white transition-colors py-1 px-2 rounded-md text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={isLoading || !selectedAssigneeName}
         >
           {isLoading ? 'Assigning...' : `Confirm Assignment`}
@@ -699,7 +699,7 @@ Current date: ${new Date().toLocaleDateString()}`;
               className={cn(
                 "flex flex-col rounded-lg px-4 py-2 shadow-sm",
                 message.role === "user" 
-                  ? "ml-auto bg-primary text-primary-foreground max-w-[80%] border border-primary/20" 
+                  ? "ml-auto bg-[#64c6c4] text-white max-w-[80%] border border-[#64c6c4]/20" 
                   : "bg-muted text-foreground max-w-[90%] border border-gray-200 dark:border-gray-800",
               )}
             >

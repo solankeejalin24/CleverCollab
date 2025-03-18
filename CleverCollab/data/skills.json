@@ -91,13 +91,6 @@
     "id": "1741486483723"
   },
   {
-    "name": "bakxhodi",
-    "category": "Other",
-    "teamMemberId": "62bbca19ec4c0d377f9fa23a",
-    "teamMemberName": "Jalin Solankee",
-    "id": "1741488059562"
-  },
-  {
     "name": "Docker",
     "category": "DevOps",
     "teamMemberId": "61539e9d9cdb93007221a33c",
@@ -138,5 +131,12 @@
     "teamMemberId": "61539e9d9cdb93007221a33c",
     "teamMemberName": "Daksh Prajapati",
     "id": "1742179459030"
+  },
+  {
+    "name": "Next.js",
+    "category": "Framework",
+    "teamMemberId": "712020:0d5fd58b-1b1e-42e5-bda4-4499281a6249",
+    "teamMemberName": "Varad Parte",
+    "id": "1742322070539"
   }
 ]

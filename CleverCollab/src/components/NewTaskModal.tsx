@@ -371,7 +371,7 @@ export function NewTaskModal({ isOpen, onClose, onTaskCreated, initialColumnId }
         
         <div className="space-y-3 py-2">
           <div className="space-y-1">
-            <Label htmlFor="summary" className="text-sm">Summary (required)</Label>
+            <Label htmlFor="summary" className="text-sm">Summary (optional)</Label>
             <Input
               id="summary"
               name="summary"
@@ -492,6 +492,7 @@ export function NewTaskModal({ isOpen, onClose, onTaskCreated, initialColumnId }
             onClick={refineWithAI}
             disabled={aiRefining || loading || !formData.description}
             size="sm"
+            className="bg-[#a4cb6a] hover:bg-[#a4cb6a]/80 text-white hover:text-white transition-colors"
           >
             {aiRefining ? (
               <>
@@ -514,6 +515,7 @@ export function NewTaskModal({ isOpen, onClose, onTaskCreated, initialColumnId }
               onClick={createTask}
               disabled={loading || !formData.summary || !formData.description}
               size="sm"
+              className="bg-[#64c6c4] hover:bg-[#64c6c4]/80 text-white hover:text-white transition-colors"
             >
               {loading ? (
                 <>
