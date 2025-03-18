@@ -2,7 +2,7 @@
 
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { FormEvent, useRef, useEffect, useCallback, useState } from "react"
-import { Send, Trash2, Loader2 } from 'lucide-react'
+import { Send, Trash2, Loader2, Mail } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -100,6 +100,7 @@ export function ChatUI({ className }: { className?: string }) {
   const userEmail = user?.emailAddresses?.[0]?.emailAddress;
   const userName = user?.firstName || user?.lastName || user?.username;
   const { currentUserIssues, issues, fetchIssues } = useJira();
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
   
   // Function to directly assign a task
   const assignTask = useCallback(async (taskKey: string, assignee: string) => {
@@ -675,20 +676,71 @@ Current date: ${new Date().toLocaleDateString()}`;
     return null; // No match found
   };
 
+  // Function to send chat transcript via email
+  const sendChatTranscript = async () => {
+    if (messages.length <= 1) {
+      toast.info('No chat messages to send');
+      return;
+    }
+    
+    try {
+      setIsSendingEmail(true);
+      
+      const response = await fetch('/api/email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: messages,
+          subject: 'CleverCollab Chat Transcript'
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to send email');
+      }
+      
+      toast.success('Chat transcript sent to your email');
+    } catch (error: any) {
+      console.error('Error sending email:', error);
+      toast.error(error.message || 'Failed to send email');
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
   return (
     <div className={cn("flex flex-col h-full border border-gray-300 dark:border-gray-700 rounded-lg shadow-md overflow-hidden", className)}>
       <div className="flex items-center justify-between border-b border-gray-300 dark:border-gray-700 px-4 py-3 bg-background/80 backdrop-blur-sm sticky top-0 z-10">
         <h2 className="font-semibold">Project Management Assistant</h2>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={clearChat} 
-          aria-label="Clear chat"
-          className="hover:bg-destructive/10 hover:text-destructive"
-          disabled={isLoading}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={sendChatTranscript} 
+            aria-label="Send chat transcript to email"
+            className="hover:bg-[#64c6c4]/10 hover:text-[#64c6c4]"
+            disabled={isLoading || isSendingEmail || messages.length <= 1}
+          >
+            {isSendingEmail ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Mail className="h-4 w-4" />
+            )}
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={clearChat} 
+            aria-label="Clear chat"
+            className="hover:bg-destructive/10 hover:text-destructive"
+            disabled={isLoading}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       <ScrollArea className="flex-1 border-y border-gray-200 dark:border-gray-800" scrollHideDelay={100} type="always">
