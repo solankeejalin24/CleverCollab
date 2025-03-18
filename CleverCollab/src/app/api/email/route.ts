@@ -137,10 +137,15 @@ function formatChatTranscript(messages: any[], userName: string) {
     
     const lines = text.split('\n');
     
+    // Remove blank lines at the start and end
+    while (lines.length > 0 && lines[0].trim() === '') lines.shift();
+    while (lines.length > 0 && lines[lines.length - 1].trim() === '') lines.pop();
+    
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      const isUnorderedListItem = /^- (.*)$/.test(line);
-      const isOrderedListItem = /^\d+\. (.*)$/.test(line);
+      const line = lines[i].trim();
+      // Check for different list item formats
+      const isUnorderedListItem = /^[-*•] (.*)$/.test(line);
+      const isOrderedListItem = /^\d+\.\s+(.*)$/.test(line);
       
       if (isUnorderedListItem || isOrderedListItem) {
         if (!inList) {
@@ -148,9 +153,29 @@ function formatChatTranscript(messages: any[], userName: string) {
           inList = true;
           listStartIndex = i;
           listType = isUnorderedListItem ? 'ul' : 'ol';
+        } else if (listType === 'ol' && isUnorderedListItem) {
+          // This is a new unordered list after an ordered list
+          listBlocks.push({ start: listStartIndex, end: i - 1, type: listType });
+          listStartIndex = i;
+          listType = 'ul';
+        } else if (listType === 'ul' && isOrderedListItem) {
+          // This is a new ordered list after an unordered list
+          listBlocks.push({ start: listStartIndex, end: i - 1, type: listType });
+          listStartIndex = i;
+          listType = 'ol';
         }
-      } else if (inList && line.trim() === '') {
-        // End of the list with an empty line
+      } else if (inList && (line === '' || i === lines.length - 1)) {
+        // End of the list with an empty line or end of text
+        if (i === lines.length - 1 && line !== '') {
+          // Include the last line if it's not empty
+          listBlocks.push({ start: listStartIndex, end: i, type: listType });
+        } else {
+          listBlocks.push({ start: listStartIndex, end: i - 1, type: listType });
+        }
+        inList = false;
+      } else if (inList && !line.startsWith(' ') && !line.startsWith('\t') && line !== '') {
+        // If we encounter a line that doesn't look like a list item or indented content
+        // End the current list
         listBlocks.push({ start: listStartIndex, end: i - 1, type: listType });
         inList = false;
       }
@@ -168,9 +193,13 @@ function formatChatTranscript(messages: any[], userName: string) {
       // Convert list items
       for (let j = start; j <= end; j++) {
         if (type === 'ul') {
-          lines[j] = lines[j].replace(/^- (.*)$/, '<li style="margin-bottom: 8px; color: #333;">$1</li>');
-        } else {
-          lines[j] = lines[j].replace(/^\d+\. (.*)$/, '<li style="margin-bottom: 8px; color: #333;">$1</li>');
+          // Handle various bullet formats (-, *, •)
+          lines[j] = lines[j].trim().replace(/^[-*•]\s+(.*)$/, '<li style="margin-bottom: 8px; color: #333;">$1</li>');
+        } else if (type === 'ol') {
+          // For ordered lists, maintain the numbering
+          lines[j] = lines[j].trim().replace(/^(\d+)\.\s+(.*)$/, (match, number, content) => {
+            return `<li value="${number}" style="margin-bottom: 8px; color: #333;">${content}</li>`;
+          });
         }
       }
       
@@ -328,4 +357,4 @@ function formatPlainTextTranscript(messages: any[]) {
   const footer = 'This is an automated email from CleverCollab. Please do not reply to this email.';
   
   return header + messagesList + footer;
-} 
+}
