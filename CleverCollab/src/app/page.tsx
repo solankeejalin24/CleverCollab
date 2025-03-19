@@ -264,7 +264,7 @@ export default function Home() {
           <Button
             onClick={openSkillsModal}
             size="lg"
-            className="px-8 bg-[#64c6c4] hover:bg-[#64c6c4]/80 text-white hover:text-white transition-colors"
+            className="px-8 bg-[#a4cb6a] hover:bg-[#a4cb6a]/80 text-white hover:text-white transition-colors"
           >
             Manage Skills
           </Button>
