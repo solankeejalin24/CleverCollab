@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation"
 import Link from "next/link"
-import { MessageSquareText, Menu } from 'lucide-react'
+import { MessageSquareText, Menu, Info } from 'lucide-react'
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/ThemeToggle"
@@ -10,6 +10,12 @@ import { Logo } from "@/components/Logo"
 import { useChatbot } from "./ChatbotContext"
 import { useState } from "react"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 export function Header() {
   const pathname = usePathname()
@@ -50,6 +56,32 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-3">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground hover:text-primary hover:bg-primary/10"
+                  aria-label="About CleverCollab"
+                >
+                  <Info className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" align="center" className="max-w-xs">
+                <div className="text-sm">
+                  <h3 className="font-semibold mb-1">CleverCollab Features:</h3>
+                  <ul className="pl-2 space-y-1.5">
+                    <li><span className="font-medium">Home:</span> Prioritized tasks with intelligent sorting by due date, status, and estimated hours.</li>
+                    <li><span className="font-medium">Kanban Board:</span> Real-time Jira integration with AI-powered task creation and refinement.</li>
+                    <li><span className="font-medium">Chatbot:</span> AI assistant for task assignment, workload distribution, skill matching, and project queries.</li>
+                    <li><span className="font-medium">Skills Management:</span> Track and assign team members based on abilities and expertise.</li>
+                    <li><span className="font-medium">Email Features:</span> Send chat transcripts to your email for future reference.</li>
+                  </ul>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <ThemeToggle />
           <Button 
             variant="outline" 

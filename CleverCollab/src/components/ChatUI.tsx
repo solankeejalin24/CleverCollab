@@ -730,16 +730,16 @@ Current date: ${new Date().toLocaleDateString()}`;
               <Mail className="h-4 w-4" />
             )}
           </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={clearChat} 
-            aria-label="Clear chat"
-            className="hover:bg-destructive/10 hover:text-destructive"
-            disabled={isLoading}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={clearChat} 
+          aria-label="Clear chat"
+          className="hover:bg-destructive/10 hover:text-destructive"
+          disabled={isLoading}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
         </div>
       </div>
 
