@@ -21,37 +21,19 @@ To set up the application, ensure you have the required tools and dependencies i
 
 3. **Verify Installation**: After installation, verify that all dependencies are installed correctly by running the app. If everything is set up properly, you should see the AI system running without errors.
 
-## Setting up the Database with Convex
-
-Before you can run the application, you'll need to set up the **Convex** database. Follow these steps to prepare your database:
-
 ## Running the Application
-
-You have two options for running the application: running just the backend (AI Agents), or running both the front-end and backend for a full application experience. Follow the instructions below for each method:
-
-### Running the Front-End Application
 
 1. **Start the Front-End**: Navigate to the front-end project folder and run the React application:
     ```bash
-    npm start
+    npm run dev
     ```
-    This will start the front-end application in your default web browser.
-
-### Running the Full Application (Front-End + Backend)
-
-1. **Start the Full Application**: Navigate to the backend project folder and run:
-    ```bash
-    python app.py
-    ```
-    This will start the backend AI system along with the front-end interface.
-
-Please wait a few moments for both the backend and front-end applications to start. Once the front-end loads in your browser, you will be able to interact with the AI agents.
+    This will start the application in your default web browser (local host).
 
 ## Using the System
 
 Upon logging in, you’ll be greeted with the **Dashboard**, where you can view project tasks, their status, and assigned team members.
 
-### Key Features:
+### Key Features of Chatbot:
 - **Task Prioritization**: AI agents help you prioritize your schedule and help managers to proactively predict any potential delays and bottlenecks.  
 - **Skill Matching**: AI agents help you find teammates with skills that align best with your current tasks to seek efficient help.
 - **Task Allocation**: AI agents automatically assign tasks based on team member skills and availability.
@@ -64,9 +46,25 @@ Upon logging in, you’ll be greeted with the **Dashboard**, where you can view 
 
 ### Navigating the Dashboard
 
-- **View Tasks**: A detailed list of tasks with current statuses (e.g., In Progress, Completed).
-- **Filter Tasks**: Use filters to view high-priority tasks or tasks at risk.
-- **Update Progress**: Update task progress by clicking on the task card and entering completion details.
+- My Prioritized Tasks: Upon login, authenticated users can view a personalized list of their prioritized tasks based on deadlines, dependencies, and workload analysis.
+
+- Chatbot Access: Click to interact with the CleverCollab chatbot for task queries, updates, and project automation.
+
+- Light/Dark Mode Switch: Toggle between light and dark themes for a personalized dashboard experience.
+
+-  Button: Access helpful information and quick tips about using the dashboard features.
+
+- Manage Skills: Opens a modal window where users can add, edit, or update team member skills. These skills are utilized by the AI for smarter task assignments and workload balancing.
+
+- Kanban Board Access: Navigate to the Kanban board for a visual workflow management experience.
+
+### Kanban Board Features:
+
+- Drag and Drop: Move tasks across columns (e.g., To Do, In Progress, Done) to update their status directly in Jira in real-time.
+
+- Hover to View Details: Hover over any task card to see the full task description without opening a separate page.
+
+- Add New Task (Automated): Click the plus (+) button on the Kanban board to initiate the creation of a new task. Enter a task summary, and the AI will automatically refine the details (assignee, estimated hours, priority) and create the complete task in Jira.
 
 ## FAQ
 
@@ -77,7 +75,7 @@ Upon logging in, you’ll be greeted with the **Dashboard**, where you can view 
 **A:** The AI uses a combination of skills matching and availability data to allocate tasks to the most appropriate team members. It can also predict potential delays based on task dependencies and current progress.
 
 **Q: Can I manually override task assignments?**  
-**A:** Yes! If you prefer to manually assign tasks, you can disable the AI's automatic assignment feature from the settings.
+**A:** Yes! If you prefer to manually assign tasks, we have given an option to edit assignee name and other fields before you hit confirmation button for any of the automation components. Additionally, you can always edit those fields in Jira.
 
 **Q: How do I check the progress of my tasks?**  
 **A:** Navigate to the **Task Dashboard** to see a real-time status of all your assigned tasks.
