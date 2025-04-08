@@ -1,18 +1,36 @@
 # Senior Design Report - CleverCollab
 
 ## Table of Contents
-1. [Team Names and Project Abstract](#team-names-and-project-abstract)
-2. [Project Description](#project-description)
-3. [User Stories and Design Diagrams](#user-stories-and-design-diagrams)
-    - [User Stories](#user-stories)
-    - [Design Diagrams](#design-diagrams)
-4. 
-5. [ABET Concerns Essay](#abet-concerns-essay)
-6. [PPT Slideshow](#ppt-slideshow)
-7. [Self-Assessment Essays Fall Semester](#self-assessment-essays)
-8. [Professional Biographies](#professional-biographies)
-9. [Summary of Expenses](#budget)
-10. [Appendix](#appendix)
+1.  [Team Names and Project Abstract](#team-names-and-project-abstract)
+2.  [Project Description](#project-description)
+3.  [User Stories and Design Diagrams](#user-stories-and-design-diagrams)
+    *   [User Stories](#user-stories)
+    *   [Design Diagrams](#design-diagrams)
+4.  [User Interface Specification](#user-interface-specification)
+5.  [Test Plan and Results](#test-plan-and-results)
+    *   [Test Plan](#test-plan)
+    *   [Results](#results)
+6.  [User Manual](#user-manual)
+7.  [Key Features](#key-features)
+8.  [Technical Stack](#technical-stack)
+    *   [Backend](#backend)
+    *   [Frontend](#frontend)
+    *   [API Integration & Database](#api-integration--database)
+9.  [PPT Slideshow](#ppt-slideshow)
+10. [Final Expo Poster](#final-expo-poster)
+11. [Self-Assessments](#self-assessments)
+    *   [Initial Self-Assessments](#initial-self-assessments)
+    *   [Final Self-Assessments](#final-self-assessments)
+12. [Summary of Hours and Justification](#summary-of-hours-and-justification)
+    *   [Fall Semester Hours](#fall-semester-hours)
+    *   [Spring Semester Hours](#spring-semester-hours)
+13. [Summary of Expenses](#summary-of-expenses)
+14. [ABET Concerns Essay](#abet-concerns-essay)
+    *   [Economic Constraints](#economic-constraints)
+    *   [Professional Constraints](#professional-constraints)
+    *   [Ethical Constraints](#ethical-constraints)
+    *   [Security Constraints](#security-constraints)
+15. [Appendix](#appendix)
 
 ## Team Names and Project Abstract
 - Team members: Arya Narke, Varad Parte, Daksh Prajapati, Jalin Solankee
@@ -66,9 +84,9 @@ CleverCollab streamlines project management with one AI-powered app to handle ta
 - **Gmail API**
 
 ## PPT Slideshow
-**Video Presentation**: [CleverCollab Fall Presentation](https://mailuc-my.sharepoint.com/personal/narkean_mail_uc_edu/_layouts/15/stream.aspx?id=%2Fpersonal%2Fnarkean%5Fmail%5Fuc%5Fedu%2FDocuments%2FRecordings%2FSenior%20Design%2D20241027%5F172629%2DMeeting%20Recording%2Emp4&nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJTdHJlYW1XZWJBcHAiLCJyZWZlcnJhbFZpZXciOiJTaGFyZURpYWxvZy1MaW5rIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXcifX0&ga=1&referrer=StreamWebApp%2EWeb&referrerScenario=AddressBarCopied%2Eview%2Eb3944bf8%2Daa5e%2D4673%2Db69b%2D9c1cfb42d422)
+**Video Presentation**: [Fall Presentation](https://mailuc-my.sharepoint.com/personal/narkean_mail_uc_edu/_layouts/15/stream.aspx?id=%2Fpersonal%2Fnarkean%5Fmail%5Fuc%5Fedu%2FDocuments%2FRecordings%2FSenior%20Design%2D20241027%5F172629%2DMeeting%20Recording%2Emp4&nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJTdHJlYW1XZWJBcHAiLCJyZWZlcnJhbFZpZXciOiJTaGFyZURpYWxvZy1MaW5rIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXcifX0&ga=1&referrer=StreamWebApp%2EWeb&referrerScenario=AddressBarCopied%2Eview%2Eb3944bf8%2Daa5e%2D4673%2Db69b%2D9c1cfb42d422)
 
-**Video Presentation Final**: [CleverCollab Spring Final Presentation](https://mailuc-my.sharepoint.com/:v:/g/personal/narkean_mail_uc_edu/ETG6TJ96W9JPjch_ir3y7QsBaFo04MAK6QeMOoYGCSZbQg?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJTdHJlYW1XZWJBcHAiLCJyZWZlcnJhbFZpZXciOiJTaGFyZURpYWxvZy1MaW5rIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXcifX0%3D&e=dnQSaV)
+**Video Presentation Final**: [Spring Final Presentation](https://mailuc-my.sharepoint.com/:v:/g/personal/narkean_mail_uc_edu/ETG6TJ96W9JPjch_ir3y7QsBaFo04MAK6QeMOoYGCSZbQg?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJTdHJlYW1XZWJBcHAiLCJyZWZlcnJhbFZpZXciOiJTaGFyZURpYWxvZy1MaW5rIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXcifX0%3D&e=dnQSaV)
 
 
 
@@ -80,14 +98,14 @@ CleverCollab streamlines project management with one AI-powered app to handle ta
 [**Link to Poster**](https://github.com/solankeejalin24/CleverCollab/blob/main/CleverCollab_Expo_Poster.pdf)
 
 
-## Initial Self-Assessment Essay
+## Initial Self-Assessments
 1. [**Arya Narke**](https://github.com/solankeejalin24/CleverCollab/blob/main/Essays/Individual_Capstone_Assignment_narkean.pdf)
 2. [**Varad Parte**](https://github.com/solankeejalin24/CleverCollab/blob/main/Essays/Individual%20Capstone%20Assignment_partevr.pdf)
 3. [**Daksh Prajapati**](https://github.com/solankeejalin24/CleverCollab/blob/main/Essays/Individual_Capstone_Assignment_prajapdh.pdf)
 4. [**Jalin Solankee**](https://github.com/solankeejalin24/CleverCollab/blob/main/Essays/Individual_Capstone_Assignment_solankjp.pdf)
 
-## Final Self-Assessment Essay
-1.
+## Final Self-Assessments
+1. 
 2.
 3.
 4.
@@ -193,11 +211,15 @@ We need to ensure that our AI agents are transparent in their decision-making pr
 Our project involves handling sensitive project management data, which means we must prioritize data security and privacy. We are responsible for ensuring that all user data is securely stored and protected from unauthorized access. Additionally, we need to ensure that any external APIs or services we use comply with security standards to avoid exposing sensitive information.
 
 ## Appendix
+- [MEETING NOTES] 
 - [Lang-Chain course used to learn RAG model architecture](https://github.com/bhancockio/langchain-crash-course)
 - [Forge documentation](https://developer.atlassian.com/cloud/jira/platform/getting-started-with-forge/)
 - [Sample template codes for programming](https://community.developer.atlassian.com/t/resources-to-get-started-building-rovo-agents-using-forge/82800)
 - [Kaggle Dataset used for reference](https://www.kaggle.com/datasets/antonyjr/jira-issue-reports-v1) [Initially explored but excluded from the final project due to excessive preprocessing requirements, redundant data, and irrelevant fields beyond the project's scope.]
 - [Rovo agent documentation](https://developer.atlassian.com/platform/forge/manifest-reference/modules/rovo-agent/#rovo-agent--eap-)
-- [Forge App Guide](https://developer.atlassian.com/platform/forge/manifest-reference/)
-
+- [Forge App Guide](https://developer.atlassian.com/platform/forge/manifest-reference/) [Did not include in final implementation due to high costs ~$120/month]
+- [Vercel AI SDK](https://sdk.vercel.ai/docs/introduction)
+- [Shadcn UI components](https://ui.shadcn.com/docs)
+- [Clerk Setup with Nextjs](https://clerk.com/docs/quickstarts/nextjs)
+- [OpenAI API integration](https://platform.openai.com/docs/api-reference/introduction)
 
