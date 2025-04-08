@@ -15,6 +15,7 @@
 10. [Summary of Hours and Justification](#summary-of-hours-and-justification)
     *   [Fall Semester Hours](#fall-semester-hours)
     *   [Spring Semester Hours](#spring-semester-hours)
+    *   [Meeting Notes](#meeting-notes)
 11. [Summary of Expenses](#summary-of-expenses)
 12. [User Stories and Design Diagrams](#user-stories-and-design-diagrams)
     *   [User Stories](#user-stories)
@@ -139,6 +140,9 @@ CleverCollab streamlines project management with one AI-powered app to handle ta
 | **Total Hours**                                                                  | **69**     | **55**      | **67**           | **59**         | **250**      |
 
 In addition to the development and research efforts, the team held bi-weekly meetings lasting 3–4 hours. These sessions were dedicated to discussing progress updates, addressing roadblocks, brainstorming new ideas, and sharing newly researched materials that could inform future development. 
+
+### Meeting Notes
+[**Link to Meeting Notes**]
 
 ## Summary of Expenses
 Our project budget includes $15 spent on purchasing OpenAI 4o tokens, which are sufficient to meet our needs through the end of Spring 2025. Additionally, we activated a free Jira subscription with limited features, which adequately supports all the required components and scope of our project. These resources ensure cost-effective yet efficient development for our objectives.
