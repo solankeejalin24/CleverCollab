@@ -210,7 +210,7 @@ We need to ensure that our AI agents are transparent in their decision-making pr
 Our project involves handling sensitive project management data, which means we must prioritize data security and privacy. We are responsible for ensuring that all user data is securely stored and protected from unauthorized access. Additionally, we need to ensure that any external APIs or services we use comply with security standards to avoid exposing sensitive information.
 
 ## Appendix
-- [MEETING NOTES] 
+- [MEETING NOTES](https://github.com/solankeejalin24/CleverCollab/blob/main/Essays/Clevercollab_Meeting_Minutes.pdf)
 - [Lang-Chain course used to learn RAG model architecture](https://github.com/bhancockio/langchain-crash-course)
 - [Forge documentation](https://developer.atlassian.com/cloud/jira/platform/getting-started-with-forge/)
 - [Sample template codes for programming](https://community.developer.atlassian.com/t/resources-to-get-started-building-rovo-agents-using-forge/82800)
