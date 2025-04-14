@@ -105,7 +105,10 @@ CleverCollab streamlines project management with one AI-powered app to handle ta
 3. [**Daksh Prajapati**](https://github.com/solankeejalin24/CleverCollab/blob/main/Essays/Self_Assessment_prajapdh.pdf)
 4. [**Jalin Solankee**](https://github.com/solankeejalin24/CleverCollab/blob/main/Essays/Individual_Capstone_Assignment_solankjp.pdf)
 
-### Fall Semester 
+
+## Summary of Hours and Justification
+
+### Fall Semester Hours
 
 | Task Description                               | Arya Narke | Varad Parte | Daksh Prajapati  | Jalin Solankee | Total Hours |
 |------------------------------------------------|------------|-------------|------------------|----------------|-------------|
@@ -120,7 +123,7 @@ CleverCollab streamlines project management with one AI-powered app to handle ta
 | Documentation, Testing, Reporting and Assignments | 6       | 6           | 6                | 6              | **24**           |
 | **Total Hours**                               | **45**     | **45**      | **45**           | **45**         | **180**     |
 
-### Spring Semester
+### Spring Semester Hours
 
 | Task Description                                                                 | Arya Narke | Varad Parte | Daksh Prajapati | Jalin Solankee | Total Hours |
 |----------------------------------------------------------------------------------|------------|-------------|------------------|----------------|-------------|
