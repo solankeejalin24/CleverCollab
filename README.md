@@ -100,12 +100,14 @@ CleverCollab streamlines project management with one AI-powered app to handle ta
 4. [**Jalin Solankee**](https://github.com/solankeejalin24/CleverCollab/blob/main/Essays/Individual_Capstone_Assignment_solankjp.pdf)
 
 ## Final Self-Assessments
-1. 
-2.
-3.
-4.
+1. [**Arya Narke**](https://github.com/solankeejalin24/CleverCollab/blob/main/Essays/Self_Assessment_narkean.pdf)
+2. [**Varad Parte**](https://github.com/solankeejalin24/CleverCollab/blob/main/Essays/Self_Assessment_partevr.pdf)
+3. [**Daksh Prajapati**](https://github.com/solankeejalin24/CleverCollab/blob/main/Essays/Self_Assessment_prajapdh.pdf)
+4. [**Jalin Solankee**](https://github.com/solankeejalin24/CleverCollab/blob/main/Essays/Individual_Capstone_Assignment_solankjp.pdf)
 
 ## Summary of Hours and Justification
+
+[**Link to Meeting Notes**](https://github.com/solankeejalin24/CleverCollab/blob/main/Essays/Clevercollab_Meeting_Minutes.pdf)
 
 ### Fall Semester 
 
