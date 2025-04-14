@@ -15,6 +15,7 @@
 10. [Summary of Hours and Justification](#summary-of-hours-and-justification)
     *   [Fall Semester Hours](#fall-semester-hours)
     *   [Spring Semester Hours](#spring-semester-hours)
+    *   [Summary](#summary-of-hours-and-justification-1)
     *   [Meeting Notes](#meeting-notes)
 11. [Summary of Expenses](#summary-of-expenses)
 12. [User Stories and Design Diagrams](#user-stories-and-design-diagrams)
@@ -141,6 +142,64 @@ CleverCollab streamlines project management with one AI-powered app to handle ta
 | **Total Hours**                                                                  | **69**     | **55**      | **67**           | **59**         | **250**      |
 
 In addition to the development and research efforts, the team held bi-weekly meetings lasting 3–4 hours. These sessions were dedicated to discussing progress updates, addressing roadblocks, brainstorming new ideas, and sharing newly researched materials that could inform future development. 
+
+### Summary of Hours and Justification
+
+1. **Arya Narke**
+
+Fall Hours: 45
+
+Spring Hours: 69
+
+Total Hours: 114
+
+Summary of Contributions:
+
+Fall Focus: Arya led the development of the data pipeline from Jira (10 hrs), engaged deeply in chatbot research and RAG-based query modules, and equally contributed to decision-making and documentation.
+
+Spring Focus: Arya was a core contributor to frontend development—notably in UI design, Next.js migration, Clerk integration, and TypeScript conversion. Arya also led the Skill Matching Modal (9 hrs) and contributed significantly to the design elements, presentations, and Expo Poster. 
+
+2. **Varad Parte**
+
+Fall Hours: 45
+
+Spring Hours: 55
+
+Total Hours: 100
+
+Summary of Contributions:
+
+Fall Focus: Varad showed balanced participation across all tasks, particularly stepping up during chatbot refinement with RovoAgent (10 hrs).
+
+Spring Focus: He played key roles in Next.js migration, Skill Matching Modal (9 hrs), and was actively involved in tasks related to automation.
+
+3. **Daksh Prajapati**
+
+Fall Hours: 45
+
+Spring Hours: 67
+
+Total Hours: 112
+
+Summary of Contributions:
+
+Fall Focus: Daksh led the initial chatbot development (10 hrs), worked on data preprocessing, and evenly contributed to planning, ML modeling, and documentation.
+
+Spring Focus: Daksh took lead on setting up Clerk authentication (10 hrs), and worked intensively across the migration phase, Skill Matching (9 hrs), and chatbot refinement.
+
+4. **Jalin Solankee**
+
+Fall Hours: 45
+
+Spring Hours: 59
+
+Total Hours: 104
+
+Summary of Contributions:
+
+Fall Focus: Jalin took the lead in data preprocessing (10 hrs) and maintained balanced contributions across early prototyping and design discussions.
+
+Spring Focus: His standout contributions were in Expo presentation (8 hrs), Skill Matching (9 hrs), and consistent involvement in UI development, migration, and chatbot refinement.
 
 ### Meeting Notes
 [**Link to Meeting Notes**](https://github.com/solankeejalin24/CleverCollab/blob/main/Essays/Clevercollab_Meeting_Minutes.pdf)
