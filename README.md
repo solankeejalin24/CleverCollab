@@ -105,10 +105,6 @@ CleverCollab streamlines project management with one AI-powered app to handle ta
 3. [**Daksh Prajapati**](https://github.com/solankeejalin24/CleverCollab/blob/main/Essays/Self_Assessment_prajapdh.pdf)
 4. [**Jalin Solankee**](https://github.com/solankeejalin24/CleverCollab/blob/main/Essays/Individual_Capstone_Assignment_solankjp.pdf)
 
-## Summary of Hours and Justification
-
-[**Link to Meeting Notes**](https://github.com/solankeejalin24/CleverCollab/blob/main/Essays/Clevercollab_Meeting_Minutes.pdf)
-
 ### Fall Semester 
 
 | Task Description                               | Arya Narke | Varad Parte | Daksh Prajapati  | Jalin Solankee | Total Hours |
@@ -144,7 +140,7 @@ CleverCollab streamlines project management with one AI-powered app to handle ta
 In addition to the development and research efforts, the team held bi-weekly meetings lasting 3–4 hours. These sessions were dedicated to discussing progress updates, addressing roadblocks, brainstorming new ideas, and sharing newly researched materials that could inform future development. 
 
 ### Meeting Notes
-[**Link to Meeting Notes**]
+[**Link to Meeting Notes**](https://github.com/solankeejalin24/CleverCollab/blob/main/Essays/Clevercollab_Meeting_Minutes.pdf)
 
 ## Summary of Expenses
 Our project budget includes $15 spent on purchasing OpenAI 4o tokens, which are sufficient to meet our needs through the end of Spring 2025. Additionally, we activated a free Jira subscription with limited features, which adequately supports all the required components and scope of our project. These resources ensure cost-effective yet efficient development for our objectives.
